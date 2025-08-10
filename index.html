@@ -1589,6 +1589,51 @@
         </div>
     </div>
 
+    <!-- Payment Modal -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Record Payment</h3>
+                <button class="close-modal" id="closePaymentModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="paymentAmount">Amount Paid (£)</label>
+                    <input type="number" id="paymentAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="paymentDate">Date</label>
+                    <input type="date" id="paymentDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="paymentNotes">Notes</label>
+                    <input type="text" id="paymentNotes" class="form-control" placeholder="Enter payment details">
+                </div>
+                <input type="hidden" id="currentDebtId">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelPayment">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="savePayment">Record Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History Modal -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Payment History</h3>
+                <button class="close-modal" id="closeHistoryModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="paymentHistoryContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="closeHistory">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Pension Projection Modal -->
     <div class="modal-overlay" id="pensionModal">
         <div class="modal">
@@ -1653,6 +1698,7 @@
             };
             
             let currentFilter = 'all';
+            let currentDebtId = null;
             
             // DOM Elements
             const transactionForm = document.getElementById('transactionForm');
@@ -1704,11 +1750,20 @@
             const projection55 = document.getElementById('projection55');
             const projection60 = document.getElementById('projection60');
             const projection65 = document.getElementById('projection65');
+            const paymentModal = document.getElementById('paymentModal');
+            const closePaymentModal = document.getElementById('closePaymentModal');
+            const cancelPayment = document.getElementById('cancelPayment');
+            const savePaymentBtn = document.getElementById('savePayment');
+            const historyModal = document.getElementById('historyModal');
+            const closeHistoryModal = document.getElementById('closeHistoryModal');
+            const closeHistory = document.getElementById('closeHistory');
+            const paymentHistoryContent = document.getElementById('paymentHistoryContent');
             
             // Set today's date as default
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('date').value = today;
             document.getElementById('debtDate').value = today;
+            document.getElementById('paymentDate').value = today;
             
             // Initialize charts
             let spendingChart, incomeChart;
@@ -1760,6 +1815,11 @@
             closePensionModal.addEventListener('click', () => pensionModal.classList.remove('active'));
             cancelPension.addEventListener('click', () => pensionModal.classList.remove('active'));
             updateProjectionBtn.addEventListener('click', calculatePensionProjection);
+            closePaymentModal.addEventListener('click', () => paymentModal.classList.remove('active'));
+            cancelPayment.addEventListener('click', () => paymentModal.classList.remove('active'));
+            savePaymentBtn.addEventListener('click', recordPayment);
+            closeHistoryModal.addEventListener('click', () => historyModal.classList.remove('active'));
+            closeHistory.addEventListener('click', () => historyModal.classList.remove('active'));
             
             // Initialize charts with empty data
             function initCharts() {
@@ -1930,9 +1990,11 @@
                     id: Date.now(),
                     type,
                     amount,
+                    originalAmount: amount,
                     person,
                     description: description || 'Debt Record',
-                    date
+                    date,
+                    payments: []
                 };
                 
                 if (type === 'owedToMe') {
@@ -1955,169 +2017,108 @@
                 showNotification('Debt record added successfully!');
             }
             
-            // Calculate UK tax
-            function calculateTax() {
-                const income = parseFloat(document.getElementById('annualIncome').value);
-                const pensionPercent = parseFloat(document.getElementById('pensionContribution').value) || 0;
-                const studentLoan = document.getElementById('studentLoan').value;
+            // Record payment for a debt
+            function recordPayment() {
+                const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+                const paymentDate = document.getElementById('paymentDate').value || today;
+                const paymentNotes = document.getElementById('paymentNotes').value;
+                const debtId = parseInt(document.getElementById('currentDebtId').value);
                 
-                if (!income || income <= 0) {
-                    showNotification('Please enter a valid income amount', 'error');
+                if (!paymentAmount || paymentAmount <= 0) {
+                    showNotification('Please enter a valid payment amount', 'error');
                     return;
                 }
                 
-                // Calculate pension contribution
-                const pensionAmount = income * (pensionPercent / 100);
-                const taxableIncome = income - pensionAmount;
+                // Find the debt
+                let debt = null;
+                let debtType = null;
                 
-                // UK Tax Bands 2023/2024 (simplified)
-                const personalAllowance = 12570;
-                const basicRateThreshold = 50270;
-                const higherRateThreshold = 125140;
-                
-                let taxable = taxableIncome - personalAllowance;
-                if (taxable < 0) taxable = 0;
-                
-                let tax = 0;
-                let ni = 0;
-                
-                // Calculate Income Tax
-                if (taxable > 0) {
-                    if (taxable <= (basicRateThreshold - personalAllowance)) {
-                        tax = taxable * 0.20;
-                    } else if (taxable <= (higherRateThreshold - personalAllowance)) {
-                        tax = (basicRateThreshold - personalAllowance) * 0.20;
-                        tax += (taxable - (basicRateThreshold - personalAllowance)) * 0.40;
-                    } else {
-                        tax = (basicRateThreshold - personalAllowance) * 0.20;
-                        tax += (higherRateThreshold - basicRateThreshold) * 0.40;
-                        tax += (taxable - (higherRateThreshold - personalAllowance)) * 0.45;
+                // Check owedToMe
+                for (let i = 0; i < debts.owedToMe.length; i++) {
+                    if (debts.owedToMe[i].id === debtId) {
+                        debt = debts.owedToMe[i];
+                        debtType = 'owedToMe';
+                        break;
                     }
                 }
                 
-                // Calculate National Insurance
-                const niThreshold = 12576;
-                const niUpperThreshold = 50268;
-                
-                if (taxableIncome > niThreshold) {
-                    const niLowerBand = Math.min(taxableIncome, niUpperThreshold) - niThreshold;
-                    ni = niLowerBand * 0.12;
-                    
-                    if (taxableIncome > niUpperThreshold) {
-                        ni += (taxableIncome - niUpperThreshold) * 0.02;
+                // If not found, check owedToOthers
+                if (!debt) {
+                    for (let i = 0; i < debts.owedToOthers.length; i++) {
+                        if (debts.owedToOthers[i].id === debtId) {
+                            debt = debts.owedToOthers[i];
+                            debtType = 'owedToOthers';
+                            break;
+                        }
                     }
                 }
                 
-                // Calculate Student Loan
-                let studentLoanPayment = 0;
-                const studentLoanThreshold = studentLoan === 'plan1' ? 22015 : 
-                                          studentLoan === 'plan2' ? 27295 : 
-                                          studentLoan === 'postgrad' ? 21000 : 0;
-                
-                if (studentLoan !== 'none' && taxableIncome > studentLoanThreshold) {
-                    studentLoanPayment = (taxableIncome - studentLoanThreshold) * 0.09;
-                }
-                
-                const takeHome = taxableIncome - tax - ni - studentLoanPayment;
-                
-                taxResultEl.innerHTML = `
-                    <div class="tax-line">
-                        <span>Gross Income:</span>
-                        <span>£${income.toFixed(2)}</span>
-                    </div>
-                    <div class="tax-line">
-                        <span>Pension Contribution:</span>
-                        <span>£${pensionAmount.toFixed(2)}</span>
-                    </div>
-                    <div class="tax-line">
-                        <span>Taxable Income:</span>
-                        <span>£${taxableIncome.toFixed(2)}</span>
-                    </div>
-                    <div class="tax-line">
-                        <span>Income Tax:</span>
-                        <span>£${tax.toFixed(2)}</span>
-                    </div>
-                    <div class="tax-line">
-                        <span>National Insurance:</span>
-                        <span>£${ni.toFixed(2)}</span>
-                    </div>
-                    <div class="tax-line">
-                        <span>Student Loan:</span>
-                        <span>£${studentLoanPayment.toFixed(2)}</span>
-                    </div>
-                    <div class="tax-line">
-                        <span>Total Deductions:</span>
-                        <span>£${(tax + ni + studentLoanPayment).toFixed(2)}</span>
-                    </div>
-                    <div class="tax-line">
-                        <span>Take Home Pay:</span>
-                        <span>£${takeHome.toFixed(2)}</span>
-                    </div>
-                `;
-            }
-            
-            // Calculate pension projections
-            function calculatePensionProjection() {
-                const currentAge = parseInt(document.getElementById('currentAge').value) || 35;
-                const retirementAge = parseInt(document.getElementById('retirementAge').value) || 65;
-                const contributionIncrease = parseFloat(document.getElementById('annualContribution').value) || 2.5;
-                const annualReturn = parseFloat(document.getElementById('annualReturn').value) || 5.5;
-                
-                if (currentAge >= retirementAge) {
-                    showNotification('Retirement age must be greater than current age', 'error');
+                if (!debt) {
+                    showNotification('Debt not found', 'error');
                     return;
                 }
                 
-                let currentPension = 14300;
-                let monthlyContribution = 245.60;
-                let projection55 = 0;
-                let projection60 = 0;
-                let projection65 = 0;
+                // Add payment
+                debt.payments.push({
+                    amount: paymentAmount,
+                    date: paymentDate,
+                    notes: paymentNotes
+                });
                 
-                // Calculate projections
-                for (let age = currentAge; age <= retirementAge; age++) {
-                    // Apply annual return
-                    currentPension *= (1 + annualReturn/100);
-                    
-                    // Add monthly contributions (12 times per year)
-                    currentPension += monthlyContribution * 12;
-                    
-                    // Increase contribution each year
-                    monthlyContribution *= (1 + contributionIncrease/100);
-                    
-                    // Store projections at key ages
-                    if (age === 55) projection55 = currentPension;
-                    if (age === 60) projection60 = currentPension;
-                    if (age === 65) projection65 = currentPension;
+                // Update debt amount
+                debt.amount -= paymentAmount;
+                
+                // If debt is fully paid, round to zero to avoid negative values
+                if (debt.amount < 0) {
+                    debt.amount = 0;
                 }
                 
-                // Update display
-                projection55.textContent = `£${projection55.toFixed(0)}`;
-                projection60.textContent = `£${projection60.toFixed(0)}`;
-                projection65.textContent = `£${projection65.toFixed(0)}`;
+                saveDebts();
+                updateDebtDisplay();
+                renderDebtList();
+                paymentModal.classList.remove('active');
+                
+                // Reset form
+                document.getElementById('paymentAmount').value = '';
+                document.getElementById('paymentNotes').value = '';
+                document.getElementById('paymentDate').value = today;
+                
+                showNotification('Payment recorded successfully!');
             }
             
             // Update debt display
             function updateDebtDisplay() {
-                // Calculate totals for owedToMe
-                const owedToMeTotal = debts.owedToMe.reduce((sum, debt) => sum + debt.amount, 0);
+                // Calculate totals for owedToMe (only unpaid debts)
+                const owedToMeTotal = debts.owedToMe.reduce((sum, debt) => {
+                    return sum + debt.amount;
+                }, 0);
                 
-                // Calculate totals for owedToOthers
-                const owedToOthersTotal = debts.owedToOthers.reduce((sum, debt) => sum + debt.amount, 0);
+                // Calculate totals for owedToOthers (only unpaid debts)
+                const owedToOthersTotal = debts.owedToOthers.reduce((sum, debt) => {
+                    return sum + debt.amount;
+                }, 0);
                 
                 // Update UI
                 owedToMeEl.textContent = owedToMeTotal.toFixed(2);
                 owedToOthersEl.textContent = owedToOthersTotal.toFixed(2);
                 
-                owedToMeCountEl.textContent = `By ${debts.owedToMe.length} ${debts.owedToMe.length === 1 ? 'person' : 'people'}`;
-                owedToOthersCountEl.textContent = `To ${debts.owedToOthers.length} ${debts.owedToOthers.length === 1 ? 'person' : 'people'}`;
+                // Count only active debts
+                const activeOwedToMe = debts.owedToMe.filter(d => d.amount > 0).length;
+                const activeOwedToOthers = debts.owedToOthers.filter(d => d.amount > 0).length;
+                
+                owedToMeCountEl.textContent = `By ${activeOwedToMe} ${activeOwedToMe === 1 ? 'person' : 'people'}`;
+                owedToOthersCountEl.textContent = `To ${activeOwedToOthers} ${activeOwedToOthers === 1 ? 'person' : 'people'}`;
             }
             
             // Render debt list
             function renderDebtList() {
-                const allDebts = [...debts.owedToMe, ...debts.owedToOthers];
+                // Get all active debts (owedToMe and owedToOthers with amount > 0)
+                const activeDebts = [
+                    ...debts.owedToMe.filter(d => d.amount > 0),
+                    ...debts.owedToOthers.filter(d => d.amount > 0)
+                ];
                 
-                if (allDebts.length === 0) {
+                if (activeDebts.length === 0) {
                     debtListEl.innerHTML = `
                         <div class="empty-state" style="padding: 20px;">
                             <i class="fas fa-exchange-alt"></i>
@@ -2130,20 +2131,109 @@
                 
                 debtListEl.innerHTML = '';
                 
-                allDebts.forEach(debt => {
+                activeDebts.forEach(debt => {
                     const debtItem = document.createElement('div');
                     debtItem.className = 'debt-item';
+                    
+                    // Calculate progress
+                    const paidAmount = debt.originalAmount - debt.amount;
+                    const progress = (paidAmount / debt.originalAmount) * 100;
                     
                     debtItem.innerHTML = `
                         <div class="debt-info">
                             <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
-                            <p>Amount: £${debt.amount.toFixed(2)}</p>
+                            <p>Original: £${debt.originalAmount.toFixed(2)} | Remaining: £${debt.amount.toFixed(2)}</p>
+                            <div class="debt-progress">
+                                <div class="debt-progress-fill" style="width: ${progress}%"></div>
+                            </div>
                             <p>Date: ${formatDate(debt.date)}</p>
+                        </div>
+                        <div class="debt-actions">
+                            <button class="action-btn pay-btn" data-id="${debt.id}">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </button>
+                            <button class="action-btn history-btn" data-id="${debt.id}">
+                                <i class="fas fa-history"></i>
+                            </button>
                         </div>
                     `;
                     
                     debtListEl.appendChild(debtItem);
                 });
+                
+                // Add event listeners to the new buttons
+                document.querySelectorAll('.pay-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const debtId = parseInt(e.currentTarget.dataset.id);
+                        openPaymentModal(debtId);
+                    });
+                });
+                
+                document.querySelectorAll('.history-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const debtId = parseInt(e.currentTarget.dataset.id);
+                        showPaymentHistory(debtId);
+                    });
+                });
+            }
+            
+            // Open payment modal
+            function openPaymentModal(debtId) {
+                document.getElementById('currentDebtId').value = debtId;
+                paymentModal.classList.add('active');
+            }
+            
+            // Show payment history
+            function showPaymentHistory(debtId) {
+                // Find the debt
+                let debt = null;
+                
+                // Check owedToMe
+                for (let i = 0; i < debts.owedToMe.length; i++) {
+                    if (debts.owedToMe[i].id === debtId) {
+                        debt = debts.owedToMe[i];
+                        break;
+                    }
+                }
+                
+                // If not found, check owedToOthers
+                if (!debt) {
+                    for (let i = 0; i < debts.owedToOthers.length; i++) {
+                        if (debts.owedToOthers[i].id === debtId) {
+                            debt = debts.owedToOthers[i];
+                            break;
+                        }
+                    }
+                }
+                
+                if (!debt) {
+                    showNotification('Debt not found', 'error');
+                    return;
+                }
+                
+                paymentHistoryContent.innerHTML = `
+                    <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
+                    <p>Original Amount: £${debt.originalAmount.toFixed(2)}</p>
+                    <p>Remaining: £${debt.amount.toFixed(2)}</p>
+                    
+                    <div class="payment-history">
+                        <h5 style="margin-top: 15px;">Payment History</h5>
+                        ${debt.payments.length > 0 ? `
+                            ${debt.payments.map(payment => `
+                                <div class="payment-item">
+                                    <div>${formatDate(payment.date)}</div>
+                                    <div>£${payment.amount.toFixed(2)}</div>
+                                </div>
+                            `).join('')}
+                        ` : `
+                            <div class="empty-state" style="padding: 15px;">
+                                <p>No payments recorded yet</p>
+                            </div>
+                        `}
+                    </div>
+                `;
+                
+                historyModal.classList.add('active');
             }
             
             // Render transactions based on filter
@@ -2494,6 +2584,148 @@
                 // Save PDF
                 doc.save(`fintrack-uk-report-${new Date().toISOString().slice(0, 10)}.pdf`);
                 showNotification('PDF exported successfully!');
+            }
+            
+            // Calculate UK tax
+            function calculateTax() {
+                const income = parseFloat(document.getElementById('annualIncome').value);
+                const pensionPercent = parseFloat(document.getElementById('pensionContribution').value) || 0;
+                const studentLoan = document.getElementById('studentLoan').value;
+                
+                if (!income || income <= 0) {
+                    showNotification('Please enter a valid income amount', 'error');
+                    return;
+                }
+                
+                // Calculate pension contribution
+                const pensionAmount = income * (pensionPercent / 100);
+                const taxableIncome = income - pensionAmount;
+                
+                // UK Tax Bands 2023/2024 (simplified)
+                const personalAllowance = 12570;
+                const basicRateThreshold = 50270;
+                const higherRateThreshold = 125140;
+                
+                let taxable = taxableIncome - personalAllowance;
+                if (taxable < 0) taxable = 0;
+                
+                let tax = 0;
+                let ni = 0;
+                
+                // Calculate Income Tax
+                if (taxable > 0) {
+                    if (taxable <= (basicRateThreshold - personalAllowance)) {
+                        tax = taxable * 0.20;
+                    } else if (taxable <= (higherRateThreshold - personalAllowance)) {
+                        tax = (basicRateThreshold - personalAllowance) * 0.20;
+                        tax += (taxable - (basicRateThreshold - personalAllowance)) * 0.40;
+                    } else {
+                        tax = (basicRateThreshold - personalAllowance) * 0.20;
+                        tax += (higherRateThreshold - basicRateThreshold) * 0.40;
+                        tax += (taxable - (higherRateThreshold - personalAllowance)) * 0.45;
+                    }
+                }
+                
+                // Calculate National Insurance
+                const niThreshold = 12576;
+                const niUpperThreshold = 50268;
+                
+                if (taxableIncome > niThreshold) {
+                    const niLowerBand = Math.min(taxableIncome, niUpperThreshold) - niThreshold;
+                    ni = niLowerBand * 0.12;
+                    
+                    if (taxableIncome > niUpperThreshold) {
+                        ni += (taxableIncome - niUpperThreshold) * 0.02;
+                    }
+                }
+                
+                // Calculate Student Loan
+                let studentLoanPayment = 0;
+                const studentLoanThreshold = studentLoan === 'plan1' ? 22015 : 
+                                          studentLoan === 'plan2' ? 27295 : 
+                                          studentLoan === 'postgrad' ? 21000 : 0;
+                
+                if (studentLoan !== 'none' && taxableIncome > studentLoanThreshold) {
+                    studentLoanPayment = (taxableIncome - studentLoanThreshold) * 0.09;
+                }
+                
+                const takeHome = taxableIncome - tax - ni - studentLoanPayment;
+                
+                taxResultEl.innerHTML = `
+                    <div class="tax-line">
+                        <span>Gross Income:</span>
+                        <span>£${income.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Pension Contribution:</span>
+                        <span>£${pensionAmount.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Taxable Income:</span>
+                        <span>£${taxableIncome.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Income Tax:</span>
+                        <span>£${tax.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>National Insurance:</span>
+                        <span>£${ni.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Student Loan:</span>
+                        <span>£${studentLoanPayment.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Total Deductions:</span>
+                        <span>£${(tax + ni + studentLoanPayment).toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Take Home Pay:</span>
+                        <span>£${takeHome.toFixed(2)}</span>
+                    </div>
+                `;
+            }
+            
+            // Calculate pension projections
+            function calculatePensionProjection() {
+                const currentAge = parseInt(document.getElementById('currentAge').value) || 35;
+                const retirementAge = parseInt(document.getElementById('retirementAge').value) || 65;
+                const contributionIncrease = parseFloat(document.getElementById('annualContribution').value) || 2.5;
+                const annualReturn = parseFloat(document.getElementById('annualReturn').value) || 5.5;
+                
+                if (currentAge >= retirementAge) {
+                    showNotification('Retirement age must be greater than current age', 'error');
+                    return;
+                }
+                
+                let currentPension = 14300;
+                let monthlyContribution = 245.60;
+                let projection55 = 0;
+                let projection60 = 0;
+                let projection65 = 0;
+                
+                // Calculate projections
+                for (let age = currentAge; age <= retirementAge; age++) {
+                    // Apply annual return
+                    currentPension *= (1 + annualReturn/100);
+                    
+                    // Add monthly contributions (12 times per year)
+                    currentPension += monthlyContribution * 12;
+                    
+                    // Increase contribution each year
+                    monthlyContribution *= (1 + contributionIncrease/100);
+                    
+                    // Store projections at key ages
+                    if (age === 55) projection55 = currentPension;
+                    if (age === 60) projection60 = currentPension;
+                    if (age === 65) projection65 = currentPension;
+                }
+                
+                // Update display
+                projection55.textContent = `£${projection55.toFixed(0)}`;
+                projection60.textContent = `£${projection60.toFixed(0)}`;
+                projection65.textContent = `£${projection65.toFixed(0)}`;
             }
             
             // Reset all data
