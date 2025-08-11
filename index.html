@@ -11,10 +11,8 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics-compat.js"></script>
     <style>
-        /* All original styles remain unchanged */
         :root {
             --primary: #1d4ed8;
             --secondary: #3b82f6;
@@ -1052,100 +1050,105 @@
             margin-bottom: 8px;
         }
 
-        /* Auth UI Styles */
+        /* Auth Styling */
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        .auth-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--uk-blue), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .auth-toggle {
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .auth-toggle a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-toggle a:hover {
+            text-decoration: underline;
+        }
+
+        .google-btn {
+            background: #4285F4;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .google-btn:hover {
+            background: #3367D6;
+            transform: translateY(-3px);
+        }
+
         .user-info {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-right: 10px;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--dark);
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #f1f5f9;
         }
 
         .user-avatar {
-            width: 36px;
-            height: 36px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--uk-blue), var(--primary));
+            background: var(--primary);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
+            font-weight: 600;
         }
 
-        .logout-btn {
-            background: none;
+        .sign-out-btn {
+            background: transparent;
             border: none;
             color: var(--danger);
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 5px;
-            padding: 4px 0;
         }
 
-        .logout-btn:hover {
+        .sign-out-btn:hover {
             text-decoration: underline;
-        }
-
-        .auth-modal .modal {
-            max-width: 400px;
-        }
-
-        .auth-tabs {
-            display: flex;
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 20px;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 600;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .auth-tab.active {
-            border-bottom: 3px solid var(--uk-blue);
-            color: var(--uk-blue);
-        }
-
-        .auth-form {
-            display: none;
-        }
-
-        .auth-form.active {
-            display: block;
-        }
-
-        .auth-footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-
-        .auth-message {
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .auth-message.error {
-            background: #fee2e2;
-            border-left: 4px solid #ef4444;
-            color: #b91c1c;
-        }
-
-        .auth-message.success {
-            background: #d1fae5;
-            border-left: 4px solid #10b981;
-            color: #065f46;
         }
 
         @media (min-width: 576px) {
@@ -1214,376 +1217,416 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-wallet"></i>
-                </div>
-                <h1>FinTrack <span style="color: var(--uk-blue);">UK</span></h1>
-            </div>
-            <div class="nav-buttons" id="authButtons">
-                <div id="userInfo" style="display: none;" class="user-info">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <div>
-                        <div id="userName">User</div>
-                        <button class="logout-btn" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </button>
+        <div id="auth-container" class="auth-container">
+            <h1 class="auth-title">FinTrack UK</h1>
+            <p>Manage your finances securely</p>
+            
+            <div id="auth-form-container" class="auth-form">
+                <div id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" class="form-control" placeholder="Enter your email">
                     </div>
-                </div>
-                <button class="btn btn-primary" id="loginBtn">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
-                <div class="tooltip">
-                    <button class="btn btn-outline" id="syncBtn">
-                        <i class="fas fa-sync-alt"></i>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="Enter your password">
+                    </div>
+                    <button id="sign-in-btn" class="btn btn-submit">Sign In</button>
+                    <button id="google-sign-in-btn" class="google-btn">
+                        <i class="fab fa-google"></i> Sign in with Google
                     </button>
-                    <span class="tooltiptext">Coming in next update: Bank sync feature</span>
-                </div>
-                <button class="btn btn-primary" id="exportBtn">
-                    <i class="fas fa-download"></i>
-                </button>
-            </div>
-        </header>
-        
-        <!-- Rest of your HTML content remains unchanged -->
-        <!-- Feature Card -->
-        <div class="feature-card">
-            <div class="feature-section">
-                <div class="feature-header">
-                    <div class="feature-icon">
-                        <i class="fas fa-hand-holding-usd"></i>
-                    </div>
-                    <div class="feature-title">Debt Tracker</div>
-                </div>
-                <div class="debt-grid">
-                    <div class="debt-card owed-to-me">
-                        <div class="debt-label">You're Owed</div>
-                        <div class="debt-value">£<span id="owedToMe">0.00</span></div>
-                        <div class="debt-label" id="owedToMeCount">By 0 people</div>
-                    </div>
-                    <div class="debt-card owed-to-others">
-                        <div class="debt-label">You Owe</div>
-                        <div class="debt-value">£<span id="owedToOthers">0.00</span></div>
-                        <div class="debt-label" id="owedToOthersCount">To 0 people</div>
+                    <div class="auth-toggle">
+                        Don't have an account? <a id="show-signup">Sign Up</a>
                     </div>
                 </div>
-                <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="addDebtBtn">
-                    <i class="fas fa-plus"></i> Add Debt Record
-                </button>
                 
-                <div class="debt-management">
-                    <h4 style="margin-bottom: 10px;">Manage Debts</h4>
-                    <div class="debt-list" id="debtList">
-                        <div class="empty-state" style="padding: 20px;">
-                            <i class="fas fa-exchange-alt"></i>
-                            <h4>No active debts</h4>
-                            <p>Add a debt record to get started</p>
-                        </div>
+                <div id="signup-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" class="form-control" placeholder="Enter your email">
                     </div>
-                </div>
-            </div>
-            
-            <div class="feature-section">
-                <div class="feature-header">
-                    <div class="feature-icon">
-                        <i class="fas fa-comment-alt"></i>
+                    <div class="form-group">
+                        <label for="signup-password">Password (min 6 characters)</label>
+                        <input type="password" id="signup-password" class="form-control" placeholder="Create a password">
                     </div>
-                    <div class="feature-title">SMS Import</div>
-                </div>
-                <p>Automatically import transactions from your UK bank SMS alerts</p>
-                <button class="sms-import-btn" id="smsImportBtn">
-                    <i class="fas fa-sms"></i> Import Bank Transactions
-                </button>
-                <div class="local-insight">
-                    <i class="fas fa-lightbulb insight-icon"></i>
-                    <strong>UK Insight:</strong> Save 15 mins daily by automating transaction entry
+                    <div class="form-group">
+                        <label for="signup-confirm">Confirm Password</label>
+                        <input type="password" id="signup-confirm" class="form-control" placeholder="Confirm your password">
+                    </div>
+                    <button id="sign-up-btn" class="btn btn-submit">Create Account</button>
+                    <div class="auth-toggle">
+                        Already have an account? <a id="show-login">Sign In</a>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- UK Innovations Section -->
-        <div class="uk-feature-grid">
-            <!-- Open Banking Card -->
-            <div class="uk-feature-card">
-                <div class="uk-feature-header">
-                    <div class="feature-icon">
-                        <i class="fas fa-university"></i>
+        <div id="app-container" style="display: none;">
+            <header>
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-wallet"></i>
                     </div>
-                    <div class="uk-feature-title">Open Banking</div>
+                    <h1>FinTrack <span style="color: var(--uk-blue);">UK</span></h1>
                 </div>
-                <p>Connect your UK bank accounts securely via Open Banking API</p>
-                <button class="btn btn-primary" style="width:100%; margin-top:15px;" id="openBankingBtn">
-                    <i class="fas fa-plug"></i> Connect Bank Account
-                </button>
-                <div class="local-insight">
-                    <i class="fas fa-lightbulb insight-icon"></i>
-                    <strong>UK Innovation:</strong> Real-time transaction syncing with 300+ UK banks
-                </div>
-            </div>
-            
-            <!-- Tax Calculator Card -->
-            <div class="uk-feature-card">
-                <div class="uk-feature-header">
-                    <div class="feature-icon">
-                        <i class="fas fa-calculator"></i>
-                    </div>
-                    <div class="uk-feature-title">Tax Calculator</div>
-                </div>
-                <div class="tax-calculator">
-                    <div class="form-group">
-                        <label for="annualIncome">Annual Income (£)</label>
-                        <input type="number" id="annualIncome" class="form-control" placeholder="Enter your annual income" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="pensionContribution">Pension Contribution (%)</label>
-                        <input type="number" id="pensionContribution" class="form-control" placeholder="Enter %" min="0" max="100" value="5">
-                    </div>
-                    <div class="form-group">
-                        <label for="studentLoan">Student Loan Plan</label>
-                        <select id="studentLoan" class="form-control">
-                            <option value="none">None</option>
-                            <option value="plan1">Plan 1</option>
-                            <option value="plan2">Plan 2</option>
-                            <option value="postgrad">Postgraduate</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-outline" id="calculateTaxBtn">Calculate Tax</button>
-                    
-                    <div class="tax-result" id="taxResult">
-                        <p>Enter your income to calculate taxes</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Savings Goals Card -->
-            <div class="uk-feature-card">
-                <div class="uk-feature-header">
-                    <div class="feature-icon">
-                        <i class="fas fa-bullseye"></i>
-                    </div>
-                    <div class="uk-feature-title">Savings Goals</div>
-                </div>
-                <div class="savings-goal">
-                    <h4>ISA Savings Goal</h4>
-                    <p>£1,500 saved of £20,000</p>
-                    <div class="savings-progress">
-                        <div class="savings-fill" style="width: 7.5%"></div>
-                    </div>
-                    <small>Maximize your £20,000 annual ISA allowance</small>
-                </div>
-                <div class="savings-goal">
-                    <h4>House Deposit</h4>
-                    <p>£8,200 saved of £30,000</p>
-                    <div class="savings-progress">
-                        <div class="savings-fill" style="width: 27.3%"></div>
-                    </div>
-                    <small>Lifetime ISA bonus: £1,000</small>
-                </div>
-                <button class="btn btn-outline" style="width:100%; margin-top:10px;" id="addGoalBtn">
-                    <i class="fas fa-plus"></i> Add New Goal
-                </button>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <div class="left-column">
-                <div class="dashboard">
-                    <!-- Balance Card -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">
-                                <div class="card-icon">
-                                    <i class="fas fa-coins"></i>
-                                </div>
-                                Current Balance
-                            </div>
-                        </div>
-                        <div class="balance-amount"><span class="currency-symbol">£</span> <span id="currentBalance">0.00</span></div>
-                        <div class="balance-stats">
-                            <div class="stat">
-                                <div class="stat-value income-value" id="totalIncome">£0.00</div>
-                                <div class="stat-label">Income</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-value expense-value" id="totalExpense">£0.00</div>
-                                <div class="stat-label">Expenses</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Budget Card -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">
-                                <div class="card-icon">
-                                    <i class="fas fa-chart-pie"></i>
-                                </div>
-                                Monthly Budget
-                            </div>
-                            <button class="btn btn-outline" id="setBudgetBtn">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </div>
-                        <div class="balance-amount"><span id="usedBudget">£0.00</span> / <span id="totalBudget">£0.00</span></div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="budgetProgress"></div>
-                        </div>
-                        <div class="balance-stats">
-                            <div class="stat">
-                                <div class="stat-value" id="remainingBudget">£0.00</div>
-                                <div class="stat-label">Remaining</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-value" id="daysLeft">0 days</div>
-                                <div class="stat-label">Left</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Transaction Form -->
-                <div class="transaction-form">
-                    <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add Transaction</h2>
-                    <form id="transactionForm">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="transactionType">Type</label>
-                                <select id="transactionType" class="form-control">
-                                    <option value="income">Income</option>
-                                    <option value="expense">Expense</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="amount">Amount (£)</label>
-                                <input type="number" id="amount" class="form-control" placeholder="0.00" step="0.01" min="0">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="category">Category</label>
-                            <select id="category" class="form-control">
-                                <option value="salary">Salary</option>
-                                <option value="freelance">Freelance</option>
-                                <option value="investment">Investment</option>
-                                <option value="benefits">Benefits</option>
-                                <option value="food">Food & Dining</option>
-                                <option value="shopping">Shopping</option>
-                                <option value="transport">Transport</option>
-                                <option value="housing">Housing</option>
-                                <option value="council_tax">Council Tax</option>
-                                <option value="utilities">Utilities</option>
-                                <option value="tv_license">TV License</option>
-                                <option value="pension">Pension Contribution</option>
-                                <option value="entertainment">Entertainment</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="description">Description</label>
-                            <input type="text" id="description" class="form-control" placeholder="Enter transaction details">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="date">Date</label>
-                            <input type="date" id="date" class="form-control" value="">
-                        </div>
-                        
-                        <button type="submit" class="btn btn-submit">
-                            <i class="fas fa-check-circle"></i> Add Transaction
+                <div class="nav-buttons">
+                    <div class="user-info">
+                        <div class="user-avatar" id="user-avatar">U</div>
+                        <span id="user-email">user@example.com</span>
+                        <button class="sign-out-btn" id="sign-out-btn">
+                            <i class="fas fa-sign-out-alt"></i>
                         </button>
-                    </form>
-                </div>
-                
-                <!-- Charts -->
-                <div class="charts-container">
-                    <h2 class="chart-title"><i class="fas fa-chart-bar"></i> Financial Reports</h2>
-                    <div class="chart-row">
-                        <div class="card chart-card">
-                            <canvas id="spendingChart"></canvas>
-                        </div>
-                        <div class="card chart-card">
-                            <canvas id="incomeChart"></canvas>
-                        </div>
                     </div>
+                    <div class="tooltip">
+                        <button class="btn btn-outline" id="syncBtn">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <span class="tooltiptext">Coming in next update: Bank sync feature</span>
+                    </div>
+                    <button class="btn btn-primary" id="exportBtn">
+                        <i class="fas fa-download"></i>
+                    </button>
                 </div>
-                
-                <!-- Brexit Impact Section -->
+            </header>
+            
+            <!-- New Features Section -->
+            <div class="feature-card">
                 <div class="feature-section">
                     <div class="feature-header">
                         <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-hand-holding-usd"></i>
                         </div>
-                        <div class="feature-title">Brexit Impact Analysis</div>
+                        <div class="feature-title">Debt Tracker</div>
                     </div>
-                    <div class="brexit-impact">
-                        <p><i class="fas fa-info-circle"></i> <strong>Impact on your finances:</strong> Our analysis shows Brexit has increased your monthly grocery costs by approximately £28.50</p>
+                    <div class="debt-grid">
+                        <div class="debt-card owed-to-me">
+                            <div class="debt-label">You're Owed</div>
+                            <div class="debt-value">£<span id="owedToMe">0.00</span></div>
+                            <div class="debt-label" id="owedToMeCount">By 0 people</div>
+                        </div>
+                        <div class="debt-card owed-to-others">
+                            <div class="debt-label">You Owe</div>
+                            <div class="debt-value">£<span id="owedToOthers">0.00</span></div>
+                            <div class="debt-label" id="owedToOthersCount">To 0 people</div>
+                        </div>
                     </div>
-                    <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="brexitReportBtn">
-                        <i class="fas fa-chart-pie"></i> View Full Brexit Impact Report
+                    <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="addDebtBtn">
+                        <i class="fas fa-plus"></i> Add Debt Record
                     </button>
+                    
+                    <div class="debt-management">
+                        <h4 style="margin-bottom: 10px;">Manage Debts</h4>
+                        <div class="debt-list" id="debtList">
+                            <div class="empty-state" style="padding: 20px;">
+                                <i class="fas fa-exchange-alt"></i>
+                                <h4>No active debts</h4>
+                                <p>Add a debt record to get started</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <!-- Reset Section -->
-                <div class="reset-section">
-                    <button class="reset-btn" id="resetBtn">
-                        <i class="fas fa-redo"></i> Reset All Data
+                <div class="feature-section">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-comment-alt"></i>
+                        </div>
+                        <div class="feature-title">SMS Import</div>
+                    </div>
+                    <p>Automatically import transactions from your UK bank SMS alerts</p>
+                    <button class="sms-import-btn" id="smsImportBtn">
+                        <i class="fas fa-sms"></i> Import Bank Transactions
                     </button>
+                    <div class="local-insight">
+                        <i class="fas fa-lightbulb insight-icon"></i>
+                        <strong>UK Insight:</strong> Save 15 mins daily by automating transaction entry
+                    </div>
                 </div>
             </div>
             
-            <!-- Right Column - Transactions -->
-            <div class="right-column">
-                <div class="transaction-list">
-                    <div class="list-header">
-                        <h2 class="card-title"><i class="fas fa-list"></i> Recent Transactions</h2>
-                        <div class="filters">
-                            <button class="filter-btn active" data-filter="all">All</button>
-                            <button class="filter-btn" data-filter="income">Income</button>
-                            <button class="filter-btn" data-filter="expense">Expense</button>
+            <!-- UK Innovations Section -->
+            <div class="uk-feature-grid">
+                <!-- Open Banking Card -->
+                <div class="uk-feature-card">
+                    <div class="uk-feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="uk-feature-title">Open Banking</div>
+                    </div>
+                    <p>Connect your UK bank accounts securely via Open Banking API</p>
+                    <button class="btn btn-primary" style="width:100%; margin-top:15px;" id="openBankingBtn">
+                        <i class="fas fa-plug"></i> Connect Bank Account
+                    </button>
+                    <div class="local-insight">
+                        <i class="fas fa-lightbulb insight-icon"></i>
+                        <strong>UK Innovation:</strong> Real-time transaction syncing with 300+ UK banks
+                    </div>
+                </div>
+                
+                <!-- Tax Calculator Card -->
+                <div class="uk-feature-card">
+                    <div class="uk-feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="uk-feature-title">Tax Calculator</div>
+                    </div>
+                    <div class="tax-calculator">
+                        <div class="form-group">
+                            <label for="annualIncome">Annual Income (£)</label>
+                            <input type="number" id="annualIncome" class="form-control" placeholder="Enter your annual income" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="pensionContribution">Pension Contribution (%)</label>
+                            <input type="number" id="pensionContribution" class="form-control" placeholder="Enter %" min="0" max="100" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="studentLoan">Student Loan Plan</label>
+                            <select id="studentLoan" class="form-control">
+                                <option value="none">None</option>
+                                <option value="plan1">Plan 1</option>
+                                <option value="plan2">Plan 2</option>
+                                <option value="postgrad">Postgraduate</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-outline" id="calculateTaxBtn">Calculate Tax</button>
+                        
+                        <div class="tax-result" id="taxResult">
+                            <p>Enter your income to calculate taxes</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Savings Goals Card -->
+                <div class="uk-feature-card">
+                    <div class="uk-feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="uk-feature-title">Savings Goals</div>
+                    </div>
+                    <div class="savings-goal">
+                        <h4>ISA Savings Goal</h4>
+                        <p>£1,500 saved of £20,000</p>
+                        <div class="savings-progress">
+                            <div class="savings-fill" style="width: 7.5%"></div>
+                        </div>
+                        <small>Maximize your £20,000 annual ISA allowance</small>
+                    </div>
+                    <div class="savings-goal">
+                        <h4>House Deposit</h4>
+                        <p>£8,200 saved of £30,000</p>
+                        <div class="savings-progress">
+                            <div class="savings-fill" style="width: 27.3%"></div>
+                        </div>
+                        <small>Lifetime ISA bonus: £1,000</small>
+                    </div>
+                    <button class="btn btn-outline" style="width:100%; margin-top:10px;" id="addGoalBtn">
+                        <i class="fas fa-plus"></i> Add New Goal
+                    </button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="left-column">
+                    <div class="dashboard">
+                        <!-- Balance Card -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <div class="card-icon">
+                                        <i class="fas fa-coins"></i>
+                                    </div>
+                                    Current Balance
+                                </div>
+                            </div>
+                            <div class="balance-amount"><span class="currency-symbol">£</span> <span id="currentBalance">0.00</span></div>
+                            <div class="balance-stats">
+                                <div class="stat">
+                                    <div class="stat-value income-value" id="totalIncome">£0.00</div>
+                                    <div class="stat-label">Income</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value expense-value" id="totalExpense">£0.00</div>
+                                    <div class="stat-label">Expenses</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Budget Card -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <div class="card-icon">
+                                        <i class="fas fa-chart-pie"></i>
+                                    </div>
+                                    Monthly Budget
+                                </div>
+                                <button class="btn btn-outline" id="setBudgetBtn">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                            <div class="balance-amount"><span id="usedBudget">£0.00</span> / <span id="totalBudget">£0.00</span></div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="budgetProgress"></div>
+                            </div>
+                            <div class="balance-stats">
+                                <div class="stat">
+                                    <div class="stat-value" id="remainingBudget">£0.00</div>
+                                    <div class="stat-label">Remaining</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value" id="daysLeft">0 days</div>
+                                    <div class="stat-label">Left</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div id="transactionsContainer">
-                        <div class="empty-state">
-                            <i class="fas fa-exchange-alt"></i>
-                            <h3>No transactions yet</h3>
-                            <p>Add your first transaction to get started</p>
+                    <!-- Transaction Form -->
+                    <div class="transaction-form">
+                        <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add Transaction</h2>
+                        <form id="transactionForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="transactionType">Type</label>
+                                    <select id="transactionType" class="form-control">
+                                        <option value="income">Income</option>
+                                        <option value="expense">Expense</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="amount">Amount (£)</label>
+                                    <input type="number" id="amount" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <select id="category" class="form-control">
+                                    <option value="salary">Salary</option>
+                                    <option value="freelance">Freelance</option>
+                                    <option value="investment">Investment</option>
+                                    <option value="benefits">Benefits</option>
+                                    <option value="food">Food & Dining</option>
+                                    <option value="shopping">Shopping</option>
+                                    <option value="transport">Transport</option>
+                                    <option value="housing">Housing</option>
+                                    <option value="council_tax">Council Tax</option>
+                                    <option value="utilities">Utilities</option>
+                                    <option value="tv_license">TV License</option>
+                                    <option value="pension">Pension Contribution</option>
+                                    <option value="entertainment">Entertainment</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <input type="text" id="description" class="form-control" placeholder="Enter transaction details">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="date">Date</label>
+                                <input type="date" id="date" class="form-control" value="">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-submit">
+                                <i class="fas fa-check-circle"></i> Add Transaction
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div class="charts-container">
+                        <h2 class="chart-title"><i class="fas fa-chart-bar"></i> Financial Reports</h2>
+                        <div class="chart-row">
+                            <div class="card chart-card">
+                                <canvas id="spendingChart"></canvas>
+                            </div>
+                            <div class="card chart-card">
+                                <canvas id="incomeChart"></canvas>
+                            </div>
                         </div>
+                    </div>
+                    
+                    <!-- Brexit Impact Section -->
+                    <div class="feature-section">
+                        <div class="feature-header">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="feature-title">Brexit Impact Analysis</div>
+                        </div>
+                        <div class="brexit-impact">
+                            <p><i class="fas fa-info-circle"></i> <strong>Impact on your finances:</strong> Our analysis shows Brexit has increased your monthly grocery costs by approximately £28.50</p>
+                        </div>
+                        <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="brexitReportBtn">
+                            <i class="fas fa-chart-pie"></i> View Full Brexit Impact Report
+                        </button>
+                    </div>
+                    
+                    <!-- Reset Section -->
+                    <div class="reset-section">
+                        <button class="reset-btn" id="resetBtn">
+                            <i class="fas fa-redo"></i> Reset All Data
+                        </button>
                     </div>
                 </div>
                 
-                <div class="export-section">
-                    <h2 class="card-title"><i class="fas fa-file-export"></i> Export Data</h2>
-                    <p>Download your financial data for backup or analysis</p>
-                    <div class="export-options">
-                        <button class="export-btn" id="exportCsv">
-                            <div class="export-icon">
-                                <i class="fas fa-file-csv"></i>
+                <!-- Right Column - Transactions -->
+                <div class="right-column">
+                    <div class="transaction-list">
+                        <div class="list-header">
+                            <h2 class="card-title"><i class="fas fa-list"></i> Recent Transactions</h2>
+                            <div class="filters">
+                                <button class="filter-btn active" data-filter="all">All</button>
+                                <button class="filter-btn" data-filter="income">Income</button>
+                                <button class="filter-btn" data-filter="expense">Expense</button>
                             </div>
-                            <span>CSV Export</span>
-                        </button>
-                        <button class="export-btn" id="exportPdf">
-                            <div class="export-icon">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>
-                            <span>PDF Report</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Pension Tracker - UPDATED SECTION -->
-                <div class="feature-section" style="margin-top: 20px;">
-                    <div class="feature-header">
-                        <div class="feature-icon">
-                            <i class="fas fa-piggy-bank"></i>
                         </div>
-                        <div class="feature-title">Pension Projections</div>
+                        
+                        <div id="transactionsContainer">
+                            <div class="empty-state">
+                                <i class="fas fa-exchange-alt"></i>
+                                <h3>No transactions yet</h3>
+                                <p>Add your first transaction to get started</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="local-insight">
-                        <i class="fas fa-info-circle insight-icon"></i>
-                        Advanced pension projection features are coming in the next update!
+                    
+                    <div class="export-section">
+                        <h2 class="card-title"><i class="fas fa-file-export"></i> Export Data</h2>
+                        <p>Download your financial data for backup or analysis</p>
+                        <div class="export-options">
+                            <button class="export-btn" id="exportCsv">
+                                <div class="export-icon">
+                                    <i class="fas fa-file-csv"></i>
+                                </div>
+                                <span>CSV Export</span>
+                            </button>
+                            <button class="export-btn" id="exportPdf">
+                                <div class="export-icon">
+                                    <i class="fas fa-file-pdf"></i>
+                                </div>
+                                <span>PDF Report</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Pension Tracker - UPDATED SECTION -->
+                    <div class="feature-section" style="margin-top: 20px;">
+                        <div class="feature-header">
+                            <div class="feature-icon">
+                                <i class="fas fa-piggy-bank"></i>
+                            </div>
+                            <div class="feature-title">Pension Projections</div>
+                        </div>
+                        <div class="local-insight">
+                            <i class="fas fa-info-circle insight-icon"></i>
+                            Advanced pension projection features are coming in the next update!
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1592,69 +1635,6 @@
 
     <div class="notification" id="notification">Transaction added successfully!</div>
 
-    <!-- Auth Modal -->
-    <div class="modal-overlay auth-modal" id="authModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title" id="authModalTitle">Login to FinTrack UK</h3>
-                <button class="close-modal" id="closeAuthModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="auth-tabs">
-                    <div class="auth-tab active" data-form="login">Login</div>
-                    <div class="auth-tab" data-form="signup">Sign Up</div>
-                </div>
-                
-                <div class="auth-form active" id="loginForm">
-                    <div class="form-group">
-                        <label for="loginEmail">Email</label>
-                        <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email">
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password">
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-submit" id="loginSubmit">
-                            <i class="fas fa-sign-in-alt"></i> Login
-                        </button>
-                    </div>
-                    <div id="loginMessage" class="auth-message"></div>
-                </div>
-                
-                <div class="auth-form" id="signupForm">
-                    <div class="form-group">
-                        <label for="signupName">Full Name</label>
-                        <input type="text" id="signupName" class="form-control" placeholder="Enter your full name">
-                    </div>
-                    <div class="form-group">
-                        <label for="signupEmail">Email</label>
-                        <input type="email" id="signupEmail" class="form-control" placeholder="Enter your email">
-                    </div>
-                    <div class="form-group">
-                        <label for="signupPassword">Password (min 6 characters)</label>
-                        <input type="password" id="signupPassword" class="form-control" placeholder="Create a password">
-                    </div>
-                    <div class="form-group">
-                        <label for="signupConfirmPassword">Confirm Password</label>
-                        <input type="password" id="signupConfirmPassword" class="form-control" placeholder="Confirm your password">
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-submit" id="signupSubmit">
-                            <i class="fas fa-user-plus"></i> Create Account
-                        </button>
-                    </div>
-                    <div id="signupMessage" class="auth-message"></div>
-                </div>
-                
-                <div class="auth-footer">
-                    <p>Your data is securely stored with Firebase Authentication and Firestore</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Rest of your modals remain unchanged -->
     <!-- Budget Modal -->
     <div class="modal-overlay" id="budgetModal">
         <div class="modal">
@@ -1836,12 +1816,12 @@
     </div>
 
     <script>
-        // Firebase configuration - Replace with your actual config
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDYsizyikM-k1wrQYU0i4hBFFw9Ew16w7Y",
             authDomain: "fintrack-uk-d62ba.firebaseapp.com",
             projectId: "fintrack-uk-d62ba",
-            storageBucket: "fintrack-uk-d62ba.firebasestorage.app",
+            storageBucket: "fintrack-uk-d62ba.appspot.com",
             messagingSenderId: "1001994260633",
             appId: "1:1001994260633:web:6d3146ae83ab8f54c5e808",
             measurementId: "G-LPC9KBWQGK"
@@ -1850,15 +1830,14 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.firestore();
         const analytics = firebase.analytics();
-        
-        // Initialize the application
+
+        // Initialize the application after Firebase setup
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize variables
-            let transactions = [];
-            let budget = { total: 0 };
-            let debts = {
+            let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            let budget = JSON.parse(localStorage.getItem('budget')) || { total: 0 };
+            let debts = JSON.parse(localStorage.getItem('debts')) || {
                 owedToMe: [],
                 owedToOthers: []
             };
@@ -1867,6 +1846,19 @@
             let currentDebtId = null;
             
             // DOM Elements
+            const authContainer = document.getElementById('auth-container');
+            const appContainer = document.getElementById('app-container');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const showSignup = document.getElementById('show-signup');
+            const showLogin = document.getElementById('show-login');
+            const signInBtn = document.getElementById('sign-in-btn');
+            const signUpBtn = document.getElementById('sign-up-btn');
+            const googleSignInBtn = document.getElementById('google-sign-in-btn');
+            const signOutBtn = document.getElementById('sign-out-btn');
+            const userEmail = document.getElementById('user-email');
+            const userAvatar = document.getElementById('user-avatar');
+            
             const transactionForm = document.getElementById('transactionForm');
             const transactionsContainer = document.getElementById('transactionsContainer');
             const currentBalanceEl = document.getElementById('currentBalance');
@@ -1925,23 +1917,6 @@
             const closeHistory = document.getElementById('closeHistory');
             const paymentHistoryContent = document.getElementById('paymentHistoryContent');
             
-            // Auth UI Elements
-            const authModal = document.getElementById('authModal');
-            const closeAuthModal = document.getElementById('closeAuthModal');
-            const authTabs = document.querySelectorAll('.auth-tab');
-            const loginForm = document.getElementById('loginForm');
-            const signupForm = document.getElementById('signupForm');
-            const loginBtn = document.getElementById('loginBtn');
-            const loginSubmit = document.getElementById('loginSubmit');
-            const signupSubmit = document.getElementById('signupSubmit');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const userInfo = document.getElementById('userInfo');
-            const userName = document.getElementById('userName');
-            const userAvatar = document.getElementById('userAvatar');
-            const loginMessage = document.getElementById('loginMessage');
-            const signupMessage = document.getElementById('signupMessage');
-            const authButtons = document.getElementById('authButtons');
-            
             // Set today's date as default
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('date').value = today;
@@ -1952,277 +1927,120 @@
             let spendingChart, incomeChart;
             initCharts();
             
-            // Initialize Firebase Auth state listener
-            initFirebaseAuth();
+            // Update UI with initial data
+            updateBalances();
+            updateBudgetDisplay();
+            renderTransactions();
+            updateDebtDisplay();
+            renderDebtList();
+            updateCharts();
+            calculatePensionProjection();
             
-            // Auth Tab Switching
-            authTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    authTabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
+            // Firebase Auth State Listener
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // User is signed in
+                    appContainer.style.display = 'block';
+                    authContainer.style.display = 'none';
                     
-                    const formId = tab.dataset.form;
-                    loginForm.classList.remove('active');
-                    signupForm.classList.remove('active');
+                    // Update user info
+                    userEmail.textContent = user.email;
+                    userAvatar.textContent = user.email.charAt(0).toUpperCase();
                     
-                    if (formId === 'login') {
-                        loginForm.classList.add('active');
-                        document.getElementById('authModalTitle').textContent = 'Login to FinTrack UK';
-                    } else {
-                        signupForm.classList.add('active');
-                        document.getElementById('authModalTitle').textContent = 'Create Account';
-                    }
-                });
+                    // Track login event
+                    analytics.logEvent('login');
+                } else {
+                    // User is signed out
+                    appContainer.style.display = 'none';
+                    authContainer.style.display = 'block';
+                    loginForm.style.display = 'block';
+                    signupForm.style.display = 'none';
+                }
             });
             
-            // Open auth modal
-            loginBtn.addEventListener('click', () => {
-                authModal.classList.add('active');
+            // Auth Event Listeners
+            showSignup.addEventListener('click', () => {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
             });
             
-            // Close auth modal
-            closeAuthModal.addEventListener('click', () => {
-                authModal.classList.remove('active');
+            showLogin.addEventListener('click', () => {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
             });
             
-            // Login functionality
-            loginSubmit.addEventListener('click', loginUser);
+            signInBtn.addEventListener('click', signIn);
             
-            // Signup functionality
-            signupSubmit.addEventListener('click', signupUser);
+            signUpBtn.addEventListener('click', signUp);
             
-            // Logout functionality
-            logoutBtn.addEventListener('click', logoutUser);
+            googleSignInBtn.addEventListener('click', signInWithGoogle);
             
-            // Initialize Firebase authentication
-            function initFirebaseAuth() {
-                auth.onAuthStateChanged(user => {
-                    if (user) {
-                        // User is signed in
-                        console.log('User is signed in:', user);
-                        showUserInfo(user);
-                        loadUserData(user.uid);
-                    } else {
-                        // User is signed out
-                        console.log('User is signed out');
-                        hideUserInfo();
-                        showLoginButton();
-                        // Clear local data when user logs out
-                        transactions = [];
-                        budget = { total: 0 };
-                        debts = {
-                            owedToMe: [],
-                            owedToOthers: []
-                        };
-                        updateUI();
-                    }
-                });
-            }
+            signOutBtn.addEventListener('click', signOut);
             
-            // Show user info in header
-            function showUserInfo(user) {
-                userInfo.style.display = 'flex';
-                loginBtn.style.display = 'none';
-                
-                // Extract first letter for avatar
-                const displayName = user.displayName || 'User';
-                const firstLetter = displayName.charAt(0).toUpperCase();
-                userAvatar.textContent = firstLetter;
-                userName.textContent = displayName;
-            }
-            
-            // Hide user info
-            function hideUserInfo() {
-                userInfo.style.display = 'none';
-            }
-            
-            // Show login button
-            function showLoginButton() {
-                loginBtn.style.display = 'block';
-            }
-            
-            // Login user with email/password
-            function loginUser() {
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
+            // Auth Functions
+            function signIn() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
                 
                 if (!email || !password) {
-                    showAuthMessage(loginMessage, 'Please enter both email and password', 'error');
+                    showNotification('Please enter both email and password', 'error');
                     return;
                 }
                 
                 auth.signInWithEmailAndPassword(email, password)
-                    .then((userCredential) => {
-                        // Signed in
-                        showAuthMessage(loginMessage, 'Login successful! Loading your data...', 'success');
-                        setTimeout(() => {
-                            authModal.classList.remove('active');
-                        }, 1500);
+                    .then(() => {
+                        showNotification('Signed in successfully!');
                     })
-                    .catch((error) => {
-                        const errorMessage = error.message;
-                        showAuthMessage(loginMessage, errorMessage, 'error');
+                    .catch(error => {
+                        showNotification(`Sign in failed: ${error.message}`, 'error');
                     });
             }
             
-            // Signup new user
-            function signupUser() {
-                const name = document.getElementById('signupName').value;
-                const email = document.getElementById('signupEmail').value;
-                const password = document.getElementById('signupPassword').value;
-                const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            function signUp() {
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const confirm = document.getElementById('signup-confirm').value;
                 
-                if (!name || !email || !password || !confirmPassword) {
-                    showAuthMessage(signupMessage, 'Please fill all fields', 'error');
-                    return;
-                }
-                
-                if (password !== confirmPassword) {
-                    showAuthMessage(signupMessage, 'Passwords do not match', 'error');
+                if (!email || !password || !confirm) {
+                    showNotification('Please fill all fields', 'error');
                     return;
                 }
                 
                 if (password.length < 6) {
-                    showAuthMessage(signupMessage, 'Password must be at least 6 characters', 'error');
+                    showNotification('Password must be at least 6 characters', 'error');
+                    return;
+                }
+                
+                if (password !== confirm) {
+                    showNotification('Passwords do not match', 'error');
                     return;
                 }
                 
                 auth.createUserWithEmailAndPassword(email, password)
-                    .then((userCredential) => {
-                        // Signed up
-                        const user = userCredential.user;
-                        
-                        // Update user profile with name
-                        return user.updateProfile({
-                            displayName: name
-                        });
-                    })
                     .then(() => {
-                        showAuthMessage(signupMessage, 'Account created successfully!', 'success');
-                        
-                        // Create initial user data in Firestore
-                        const userId = auth.currentUser.uid;
-                        const userData = {
-                            transactions: [],
-                            budget: { total: 0 },
-                            debts: {
-                                owedToMe: [],
-                                owedToOthers: []
-                            },
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        };
-                        
-                        return db.collection('users').doc(userId).set(userData);
+                        showNotification('Account created successfully!');
                     })
-                    .then(() => {
-                        setTimeout(() => {
-                            authModal.classList.remove('active');
-                        }, 1500);
-                    })
-                    .catch((error) => {
-                        const errorMessage = error.message;
-                        showAuthMessage(signupMessage, errorMessage, 'error');
+                    .catch(error => {
+                        showNotification(`Sign up failed: ${error.message}`, 'error');
                     });
             }
             
-            // Logout user
-            function logoutUser() {
-                auth.signOut().then(() => {
-                    showNotification('You have been logged out');
-                }).catch((error) => {
-                    showNotification('Error signing out: ' + error.message, 'error');
-                });
-            }
-            
-            // Show authentication messages
-            function showAuthMessage(element, message, type = 'info') {
-                element.textContent = message;
-                element.className = 'auth-message';
-                
-                if (type === 'error') {
-                    element.classList.add('error');
-                } else if (type === 'success') {
-                    element.classList.add('success');
-                }
-                
-                element.style.display = 'block';
-                
-                // Clear message after 5 seconds
-                setTimeout(() => {
-                    element.style.display = 'none';
-                }, 5000);
-            }
-            
-            // Load user data from Firestore
-            function loadUserData(userId) {
-                db.collection('users').doc(userId).get()
-                    .then((doc) => {
-                        if (doc.exists) {
-                            const userData = doc.data();
-                            transactions = userData.transactions || [];
-                            budget = userData.budget || { total: 0 };
-                            debts = userData.debts || {
-                                owedToMe: [],
-                                owedToOthers: []
-                            };
-                            
-                            updateUI();
-                            showNotification('Your data has been loaded');
-                        } else {
-                            // Create new user document if it doesn't exist
-                            const userData = {
-                                transactions: [],
-                                budget: { total: 0 },
-                                debts: {
-                                    owedToMe: [],
-                                    owedToOthers: []
-                                },
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                            };
-                            
-                            return db.collection('users').doc(userId).set(userData)
-                                .then(() => {
-                                    showNotification('New account initialized');
-                                });
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Error loading user data:', error);
-                        showNotification('Error loading your data: ' + error.message, 'error');
-                    });
-            }
-            
-            // Save user data to Firestore
-            function saveUserData() {
-                const user = auth.currentUser;
-                if (!user) return;
-                
-                const userId = user.uid;
-                const userData = {
-                    transactions,
-                    budget,
-                    debts,
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                db.collection('users').doc(userId).set(userData, { merge: true })
+            function signInWithGoogle() {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                auth.signInWithPopup(provider)
                     .then(() => {
-                        console.log('User data saved');
+                        showNotification('Signed in with Google successfully!');
                     })
-                    .catch((error) => {
-                        console.error('Error saving user data:', error);
-                        showNotification('Error saving your data: ' + error.message, 'error');
+                    .catch(error => {
+                        showNotification(`Google sign in failed: ${error.message}`, 'error');
                     });
             }
             
-            // Update the UI with current data
-            function updateUI() {
-                updateBalances();
-                updateBudgetDisplay();
-                renderTransactions();
-                updateCharts();
-                updateDebtDisplay();
-                renderDebtList();
+            function signOut() {
+                auth.signOut()
+                    .then(() => {
+                        showNotification('Signed out successfully!');
+                    });
             }
             
             // Initialize charts with empty data
@@ -2358,7 +2176,7 @@
                 };
                 
                 transactions.push(transaction);
-                saveUserData(); // Save to Firestore
+                saveData();
                 
                 updateBalances();
                 updateBudgetDisplay();
@@ -2407,7 +2225,7 @@
                     debts.owedToOthers.push(debt);
                 }
                 
-                saveUserData(); // Save to Firestore
+                saveDebts();
                 updateDebtDisplay();
                 renderDebtList();
                 debtModal.classList.remove('active');
@@ -2477,7 +2295,7 @@
                     debt.amount = 0;
                 }
                 
-                saveUserData(); // Save to Firestore
+                saveDebts();
                 updateDebtDisplay();
                 renderDebtList();
                 paymentModal.classList.remove('active');
@@ -2896,7 +2714,7 @@
                 }
                 
                 budget.total = budgetAmount;
-                saveUserData(); // Save to Firestore
+                saveBudget();
                 updateBudgetDisplay();
                 budgetModal.classList.remove('active');
                 budgetAmountInput.value = '';
@@ -3141,7 +2959,9 @@
                     owedToOthers: []
                 };
                 
-                saveUserData(); // Save to Firestore
+                localStorage.removeItem('transactions');
+                localStorage.removeItem('budget');
+                localStorage.removeItem('debts');
                 
                 updateBalances();
                 updateBudgetDisplay();
@@ -3177,6 +2997,61 @@
                     word.charAt(0).toUpperCase() + word.slice(1)
                 ).join(' ');
             }
+            
+            function saveData() {
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                localStorage.setItem('budget', JSON.stringify(budget));
+            }
+            
+            function saveBudget() {
+                localStorage.setItem('budget', JSON.stringify(budget));
+            }
+            
+            function saveDebts() {
+                localStorage.setItem('debts', JSON.stringify(debts));
+            }
+            
+            // Set up event listeners for the rest of the app
+            transactionForm.addEventListener('submit', addTransaction);
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    renderTransactions();
+                });
+            });
+            
+            exportCsvBtn.addEventListener('click', exportToCsv);
+            exportPdfBtn.addEventListener('click', exportToPdf);
+            setBudgetBtn.addEventListener('click', () => budgetModal.classList.add('active'));
+            closeBudgetModal.addEventListener('click', () => budgetModal.classList.remove('active'));
+            cancelBudget.addEventListener('click', () => budgetModal.classList.remove('active'));
+            saveBudgetBtn.addEventListener('click', setBudget);
+            resetBtn.addEventListener('click', () => resetModal.classList.add('active'));
+            closeResetModal.addEventListener('click', () => resetModal.classList.remove('active'));
+            cancelReset.addEventListener('click', () => resetModal.classList.remove('active'));
+            confirmReset.addEventListener('click', resetAllData);
+            smsImportBtn.addEventListener('click', () => showNotification('SMS Import feature coming in the next update!'));
+            addDebtBtn.addEventListener('click', () => debtModal.classList.add('active'));
+            closeDebtModal.addEventListener('click', () => debtModal.classList.remove('active'));
+            cancelDebt.addEventListener('click', () => debtModal.classList.remove('active'));
+            saveDebtBtn.addEventListener('click', addDebt);
+            openBankingBtn.addEventListener('click', () => showNotification('Open Banking integration coming in the next update!'));
+            calculateTaxBtn.addEventListener('click', calculateTax);
+            addGoalBtn.addEventListener('click', () => showNotification('Savings goal feature coming in the next update!'));
+            brexitReportBtn.addEventListener('click', () => showNotification('Brexit impact report feature coming in the next update!'));
+            closePensionModal.addEventListener('click', () => pensionModal.classList.remove('active'));
+            cancelPension.addEventListener('click', () => pensionModal.classList.remove('active'));
+            updateProjectionBtn.addEventListener('click', function() {
+                calculatePensionProjection();
+                showNotification('Advanced pension projection features coming in the next update!');
+            });
+            closePaymentModal.addEventListener('click', () => paymentModal.classList.remove('active'));
+            cancelPayment.addEventListener('click', () => paymentModal.classList.remove('active'));
+            savePaymentBtn.addEventListener('click', recordPayment);
+            closeHistoryModal.addEventListener('click', () => historyModal.classList.remove('active'));
+            closeHistory.addEventListener('click', () => historyModal.classList.remove('active'));
         });
     </script>
 </body>
