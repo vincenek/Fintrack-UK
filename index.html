@@ -2029,11 +2029,18 @@
             showSignup.addEventListener('click', () => {
                 loginForm.style.display = 'none';
                 signupForm.style.display = 'block';
+                // Clear login form fields
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
             });
             
             showLogin.addEventListener('click', () => {
-                loginForm.style.display = 'block';
                 signupForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                // Clear signup form fields
+                document.getElementById('signup-email').value = '';
+                document.getElementById('signup-password').value = '';
+                document.getElementById('signup-confirm').value = '';
             });
             
             signInBtn.addEventListener('click', signIn);
@@ -2054,9 +2061,13 @@
                 
                 auth.signInWithEmailAndPassword(email, password)
                     .then(() => {
+                        // Clear password field after sign in
+                        document.getElementById('password').value = '';
                         showNotification('Signed in successfully!');
                     })
                     .catch(error => {
+                        // Clear password field on error
+                        document.getElementById('password').value = '';
                         showNotification(`Sign in failed: ${error.message}`, 'error');
                     });
             }
@@ -2083,9 +2094,21 @@
                 
                 auth.createUserWithEmailAndPassword(email, password)
                     .then(() => {
-                        showNotification('Account created successfully!');
+                        // Clear form and switch to login
+                        document.getElementById('signup-email').value = '';
+                        document.getElementById('signup-password').value = '';
+                        document.getElementById('signup-confirm').value = '';
+                        
+                        // Switch to login form
+                        signupForm.style.display = 'none';
+                        loginForm.style.display = 'block';
+                        
+                        showNotification('Account created successfully! Please sign in.');
                     })
                     .catch(error => {
+                        // Clear password fields on error
+                        document.getElementById('signup-password').value = '';
+                        document.getElementById('signup-confirm').value = '';
                         showNotification(`Sign up failed: ${error.message}`, 'error');
                     });
             }
