@@ -8,7 +8,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics-compat.js"></script>
     <style>
+        /* All original styles remain unchanged */
         :root {
             --primary: #1d4ed8;
             --secondary: #3b82f6;
@@ -1046,6 +1052,102 @@
             margin-bottom: 8px;
         }
 
+        /* Auth UI Styles */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 10px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--uk-blue), var(--primary));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 0;
+        }
+
+        .logout-btn:hover {
+            text-decoration: underline;
+        }
+
+        .auth-modal .modal {
+            max-width: 400px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab.active {
+            border-bottom: 3px solid var(--uk-blue);
+            color: var(--uk-blue);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .auth-message {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .auth-message.error {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            color: #b91c1c;
+        }
+
+        .auth-message.success {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+        }
+
         @media (min-width: 576px) {
             body {
                 padding: 20px;
@@ -1119,7 +1221,19 @@
                 </div>
                 <h1>FinTrack <span style="color: var(--uk-blue);">UK</span></h1>
             </div>
-            <div class="nav-buttons">
+            <div class="nav-buttons" id="authButtons">
+                <div id="userInfo" style="display: none;" class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div id="userName">User</div>
+                        <button class="logout-btn" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
                 <div class="tooltip">
                     <button class="btn btn-outline" id="syncBtn">
                         <i class="fas fa-sync-alt"></i>
@@ -1132,7 +1246,8 @@
             </div>
         </header>
         
-        <!-- New Features Section -->
+        <!-- Rest of your HTML content remains unchanged -->
+        <!-- Feature Card -->
         <div class="feature-card">
             <div class="feature-section">
                 <div class="feature-header">
@@ -1477,6 +1592,69 @@
 
     <div class="notification" id="notification">Transaction added successfully!</div>
 
+    <!-- Auth Modal -->
+    <div class="modal-overlay auth-modal" id="authModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="authModalTitle">Login to FinTrack UK</h3>
+                <button class="close-modal" id="closeAuthModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-tabs">
+                    <div class="auth-tab active" data-form="login">Login</div>
+                    <div class="auth-tab" data-form="signup">Sign Up</div>
+                </div>
+                
+                <div class="auth-form active" id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-submit" id="loginSubmit">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </div>
+                    <div id="loginMessage" class="auth-message"></div>
+                </div>
+                
+                <div class="auth-form" id="signupForm">
+                    <div class="form-group">
+                        <label for="signupName">Full Name</label>
+                        <input type="text" id="signupName" class="form-control" placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" class="form-control" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password (min 6 characters)</label>
+                        <input type="password" id="signupPassword" class="form-control" placeholder="Create a password">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupConfirmPassword">Confirm Password</label>
+                        <input type="password" id="signupConfirmPassword" class="form-control" placeholder="Confirm your password">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-submit" id="signupSubmit">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </button>
+                    </div>
+                    <div id="signupMessage" class="auth-message"></div>
+                </div>
+                
+                <div class="auth-footer">
+                    <p>Your data is securely stored with Firebase Authentication and Firestore</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rest of your modals remain unchanged -->
     <!-- Budget Modal -->
     <div class="modal-overlay" id="budgetModal">
         <div class="modal">
@@ -1658,12 +1836,29 @@
     </div>
 
     <script>
+        // Firebase configuration - Replace with your actual config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYsizyikM-k1wrQYU0i4hBFFw9Ew16w7Y",
+            authDomain: "fintrack-uk-d62ba.firebaseapp.com",
+            projectId: "fintrack-uk-d62ba",
+            storageBucket: "fintrack-uk-d62ba.firebasestorage.app",
+            messagingSenderId: "1001994260633",
+            appId: "1:1001994260633:web:6d3146ae83ab8f54c5e808",
+            measurementId: "G-LPC9KBWQGK"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const analytics = firebase.analytics();
+        
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize variables
-            let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            let budget = JSON.parse(localStorage.getItem('budget')) || { total: 0 };
-            let debts = JSON.parse(localStorage.getItem('debts')) || {
+            let transactions = [];
+            let budget = { total: 0 };
+            let debts = {
                 owedToMe: [],
                 owedToOthers: []
             };
@@ -1730,6 +1925,23 @@
             const closeHistory = document.getElementById('closeHistory');
             const paymentHistoryContent = document.getElementById('paymentHistoryContent');
             
+            // Auth UI Elements
+            const authModal = document.getElementById('authModal');
+            const closeAuthModal = document.getElementById('closeAuthModal');
+            const authTabs = document.querySelectorAll('.auth-tab');
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginSubmit = document.getElementById('loginSubmit');
+            const signupSubmit = document.getElementById('signupSubmit');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const userInfo = document.getElementById('userInfo');
+            const userName = document.getElementById('userName');
+            const userAvatar = document.getElementById('userAvatar');
+            const loginMessage = document.getElementById('loginMessage');
+            const signupMessage = document.getElementById('signupMessage');
+            const authButtons = document.getElementById('authButtons');
+            
             // Set today's date as default
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('date').value = today;
@@ -1740,60 +1952,278 @@
             let spendingChart, incomeChart;
             initCharts();
             
-            // Update UI with initial data
-            updateBalances();
-            updateBudgetDisplay();
-            renderTransactions();
-            updateDebtDisplay();
-            renderDebtList();
-            updateCharts();
-            calculatePensionProjection();
+            // Initialize Firebase Auth state listener
+            initFirebaseAuth();
             
-            // Event Listeners
-            transactionForm.addEventListener('submit', addTransaction);
-            filterButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    filterButtons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentFilter = btn.dataset.filter;
-                    renderTransactions();
+            // Auth Tab Switching
+            authTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    authTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const formId = tab.dataset.form;
+                    loginForm.classList.remove('active');
+                    signupForm.classList.remove('active');
+                    
+                    if (formId === 'login') {
+                        loginForm.classList.add('active');
+                        document.getElementById('authModalTitle').textContent = 'Login to FinTrack UK';
+                    } else {
+                        signupForm.classList.add('active');
+                        document.getElementById('authModalTitle').textContent = 'Create Account';
+                    }
                 });
             });
             
-            exportCsvBtn.addEventListener('click', exportToCsv);
-            exportPdfBtn.addEventListener('click', exportToPdf);
-            setBudgetBtn.addEventListener('click', () => budgetModal.classList.add('active'));
-            closeBudgetModal.addEventListener('click', () => budgetModal.classList.remove('active'));
-            cancelBudget.addEventListener('click', () => budgetModal.classList.remove('active'));
-            saveBudgetBtn.addEventListener('click', setBudget);
-            resetBtn.addEventListener('click', () => resetModal.classList.add('active'));
-            closeResetModal.addEventListener('click', () => resetModal.classList.remove('active'));
-            cancelReset.addEventListener('click', () => resetModal.classList.remove('active'));
-            confirmReset.addEventListener('click', resetAllData);
-            smsImportBtn.addEventListener('click', () => showNotification('SMS Import feature coming in the next update!'));
-            addDebtBtn.addEventListener('click', () => debtModal.classList.add('active'));
-            closeDebtModal.addEventListener('click', () => debtModal.classList.remove('active'));
-            cancelDebt.addEventListener('click', () => debtModal.classList.remove('active'));
-            saveDebtBtn.addEventListener('click', addDebt);
-            openBankingBtn.addEventListener('click', () => showNotification('Open Banking integration coming in the next update!'));
-            calculateTaxBtn.addEventListener('click', calculateTax);
-            addGoalBtn.addEventListener('click', () => showNotification('Savings goal feature coming in the next update!'));
-            brexitReportBtn.addEventListener('click', () => showNotification('Brexit impact report feature coming in the next update!'));
-            pensionProjectionBtn.addEventListener('click', () => {
-                pensionModal.classList.add('active');
-                calculatePensionProjection();
+            // Open auth modal
+            loginBtn.addEventListener('click', () => {
+                authModal.classList.add('active');
             });
-            closePensionModal.addEventListener('click', () => pensionModal.classList.remove('active'));
-            cancelPension.addEventListener('click', () => pensionModal.classList.remove('active'));
-            updateProjectionBtn.addEventListener('click', function() {
-                calculatePensionProjection();
-                showNotification('Advanced pension projection features coming in the next update!');
+            
+            // Close auth modal
+            closeAuthModal.addEventListener('click', () => {
+                authModal.classList.remove('active');
             });
-            closePaymentModal.addEventListener('click', () => paymentModal.classList.remove('active'));
-            cancelPayment.addEventListener('click', () => paymentModal.classList.remove('active'));
-            savePaymentBtn.addEventListener('click', recordPayment);
-            closeHistoryModal.addEventListener('click', () => historyModal.classList.remove('active'));
-            closeHistory.addEventListener('click', () => historyModal.classList.remove('active'));
+            
+            // Login functionality
+            loginSubmit.addEventListener('click', loginUser);
+            
+            // Signup functionality
+            signupSubmit.addEventListener('click', signupUser);
+            
+            // Logout functionality
+            logoutBtn.addEventListener('click', logoutUser);
+            
+            // Initialize Firebase authentication
+            function initFirebaseAuth() {
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        // User is signed in
+                        console.log('User is signed in:', user);
+                        showUserInfo(user);
+                        loadUserData(user.uid);
+                    } else {
+                        // User is signed out
+                        console.log('User is signed out');
+                        hideUserInfo();
+                        showLoginButton();
+                        // Clear local data when user logs out
+                        transactions = [];
+                        budget = { total: 0 };
+                        debts = {
+                            owedToMe: [],
+                            owedToOthers: []
+                        };
+                        updateUI();
+                    }
+                });
+            }
+            
+            // Show user info in header
+            function showUserInfo(user) {
+                userInfo.style.display = 'flex';
+                loginBtn.style.display = 'none';
+                
+                // Extract first letter for avatar
+                const displayName = user.displayName || 'User';
+                const firstLetter = displayName.charAt(0).toUpperCase();
+                userAvatar.textContent = firstLetter;
+                userName.textContent = displayName;
+            }
+            
+            // Hide user info
+            function hideUserInfo() {
+                userInfo.style.display = 'none';
+            }
+            
+            // Show login button
+            function showLoginButton() {
+                loginBtn.style.display = 'block';
+            }
+            
+            // Login user with email/password
+            function loginUser() {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                if (!email || !password) {
+                    showAuthMessage(loginMessage, 'Please enter both email and password', 'error');
+                    return;
+                }
+                
+                auth.signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Signed in
+                        showAuthMessage(loginMessage, 'Login successful! Loading your data...', 'success');
+                        setTimeout(() => {
+                            authModal.classList.remove('active');
+                        }, 1500);
+                    })
+                    .catch((error) => {
+                        const errorMessage = error.message;
+                        showAuthMessage(loginMessage, errorMessage, 'error');
+                    });
+            }
+            
+            // Signup new user
+            function signupUser() {
+                const name = document.getElementById('signupName').value;
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                const confirmPassword = document.getElementById('signupConfirmPassword').value;
+                
+                if (!name || !email || !password || !confirmPassword) {
+                    showAuthMessage(signupMessage, 'Please fill all fields', 'error');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    showAuthMessage(signupMessage, 'Passwords do not match', 'error');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    showAuthMessage(signupMessage, 'Password must be at least 6 characters', 'error');
+                    return;
+                }
+                
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Signed up
+                        const user = userCredential.user;
+                        
+                        // Update user profile with name
+                        return user.updateProfile({
+                            displayName: name
+                        });
+                    })
+                    .then(() => {
+                        showAuthMessage(signupMessage, 'Account created successfully!', 'success');
+                        
+                        // Create initial user data in Firestore
+                        const userId = auth.currentUser.uid;
+                        const userData = {
+                            transactions: [],
+                            budget: { total: 0 },
+                            debts: {
+                                owedToMe: [],
+                                owedToOthers: []
+                            },
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        };
+                        
+                        return db.collection('users').doc(userId).set(userData);
+                    })
+                    .then(() => {
+                        setTimeout(() => {
+                            authModal.classList.remove('active');
+                        }, 1500);
+                    })
+                    .catch((error) => {
+                        const errorMessage = error.message;
+                        showAuthMessage(signupMessage, errorMessage, 'error');
+                    });
+            }
+            
+            // Logout user
+            function logoutUser() {
+                auth.signOut().then(() => {
+                    showNotification('You have been logged out');
+                }).catch((error) => {
+                    showNotification('Error signing out: ' + error.message, 'error');
+                });
+            }
+            
+            // Show authentication messages
+            function showAuthMessage(element, message, type = 'info') {
+                element.textContent = message;
+                element.className = 'auth-message';
+                
+                if (type === 'error') {
+                    element.classList.add('error');
+                } else if (type === 'success') {
+                    element.classList.add('success');
+                }
+                
+                element.style.display = 'block';
+                
+                // Clear message after 5 seconds
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+            
+            // Load user data from Firestore
+            function loadUserData(userId) {
+                db.collection('users').doc(userId).get()
+                    .then((doc) => {
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            transactions = userData.transactions || [];
+                            budget = userData.budget || { total: 0 };
+                            debts = userData.debts || {
+                                owedToMe: [],
+                                owedToOthers: []
+                            };
+                            
+                            updateUI();
+                            showNotification('Your data has been loaded');
+                        } else {
+                            // Create new user document if it doesn't exist
+                            const userData = {
+                                transactions: [],
+                                budget: { total: 0 },
+                                debts: {
+                                    owedToMe: [],
+                                    owedToOthers: []
+                                },
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            };
+                            
+                            return db.collection('users').doc(userId).set(userData)
+                                .then(() => {
+                                    showNotification('New account initialized');
+                                });
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error loading user data:', error);
+                        showNotification('Error loading your data: ' + error.message, 'error');
+                    });
+            }
+            
+            // Save user data to Firestore
+            function saveUserData() {
+                const user = auth.currentUser;
+                if (!user) return;
+                
+                const userId = user.uid;
+                const userData = {
+                    transactions,
+                    budget,
+                    debts,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                db.collection('users').doc(userId).set(userData, { merge: true })
+                    .then(() => {
+                        console.log('User data saved');
+                    })
+                    .catch((error) => {
+                        console.error('Error saving user data:', error);
+                        showNotification('Error saving your data: ' + error.message, 'error');
+                    });
+            }
+            
+            // Update the UI with current data
+            function updateUI() {
+                updateBalances();
+                updateBudgetDisplay();
+                renderTransactions();
+                updateCharts();
+                updateDebtDisplay();
+                renderDebtList();
+            }
             
             // Initialize charts with empty data
             function initCharts() {
@@ -1928,7 +2358,7 @@
                 };
                 
                 transactions.push(transaction);
-                saveData();
+                saveUserData(); // Save to Firestore
                 
                 updateBalances();
                 updateBudgetDisplay();
@@ -1977,7 +2407,7 @@
                     debts.owedToOthers.push(debt);
                 }
                 
-                saveDebts();
+                saveUserData(); // Save to Firestore
                 updateDebtDisplay();
                 renderDebtList();
                 debtModal.classList.remove('active');
@@ -2047,7 +2477,7 @@
                     debt.amount = 0;
                 }
                 
-                saveDebts();
+                saveUserData(); // Save to Firestore
                 updateDebtDisplay();
                 renderDebtList();
                 paymentModal.classList.remove('active');
@@ -2466,7 +2896,7 @@
                 }
                 
                 budget.total = budgetAmount;
-                saveBudget();
+                saveUserData(); // Save to Firestore
                 updateBudgetDisplay();
                 budgetModal.classList.remove('active');
                 budgetAmountInput.value = '';
@@ -2711,9 +3141,7 @@
                     owedToOthers: []
                 };
                 
-                localStorage.removeItem('transactions');
-                localStorage.removeItem('budget');
-                localStorage.removeItem('debts');
+                saveUserData(); // Save to Firestore
                 
                 updateBalances();
                 updateBudgetDisplay();
@@ -2748,19 +3176,6 @@
                 return category.split('_').map(word => 
                     word.charAt(0).toUpperCase() + word.slice(1)
                 ).join(' ');
-            }
-            
-            function saveData() {
-                localStorage.setItem('transactions', JSON.stringify(transactions));
-                localStorage.setItem('budget', JSON.stringify(budget));
-            }
-            
-            function saveBudget() {
-                localStorage.setItem('budget', JSON.stringify(budget));
-            }
-            
-            function saveDebts() {
-                localStorage.setItem('debts', JSON.stringify(debts));
             }
         });
     </script>
