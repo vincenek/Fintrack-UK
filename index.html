@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinTrack UK | Finance Tracker</title>
+    <title>FinTrack UK | Complete Finance Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1073,6 +1073,44 @@
             background: linear-gradient(to right, var(--uk-blue), var(--primary));
         }
 
+        .auth-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .auth-logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--uk-blue), var(--primary));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 20px rgba(29, 78, 216, 0.2);
+        }
+
+        .auth-logo-text {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--uk-blue), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .auth-logo-subtext {
+            color: var(--uk-blue);
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-size: 1rem;
+        }
+
         .auth-title {
             font-size: 2rem;
             margin-bottom: 20px;
@@ -1294,7 +1332,14 @@
 <body>
     <div class="container">
         <div id="auth-container" class="auth-container">
-            <h1 class="auth-title">FinTrack UK</h1>
+            <div class="auth-logo">
+                <div class="auth-logo-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="auth-logo-text">FinTrack</div>
+                <div class="auth-logo-subtext">UK FINANCIAL MANAGEMENT</div>
+            </div>
+            
             <p class="auth-subtitle">Secure your financial future</p>
             
             <div id="auth-form-container">
@@ -1349,12 +1394,7 @@
                             <i class="fas fa-sign-out-alt"></i> Sign Out
                         </button>
                     </div>
-                    <div class="tooltip">
-                        <button class="btn btn-outline" id="syncBtn">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                        <span class="tooltiptext">Coming in next update: Bank sync feature</span>
-                    </div>
+                    <!-- Removed the download button as requested -->
                 </div>
             </header>
             
