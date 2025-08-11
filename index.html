@@ -8,10 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics-compat.js"></script>
     <style>
         :root {
             --primary: #1d4ed8;
@@ -1050,107 +1046,6 @@
             margin-bottom: 8px;
         }
 
-        /* Auth Styling */
-        .auth-container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 30px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--card-shadow);
-            text-align: center;
-        }
-
-        .auth-title {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            background: linear-gradient(to right, var(--uk-blue), var(--primary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .auth-toggle {
-            margin-top: 20px;
-            font-size: 0.9rem;
-        }
-
-        .auth-toggle a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .auth-toggle a:hover {
-            text-decoration: underline;
-        }
-
-        .google-btn {
-            background: #4285F4;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .google-btn:hover {
-            background: #3367D6;
-            transform: translateY(-3px);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: var(--dark);
-            padding: 5px 10px;
-            border-radius: 20px;
-            background: #f1f5f9;
-        }
-
-        .user-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-        }
-
-        .sign-out-btn {
-            background: transparent;
-            border: none;
-            color: var(--danger);
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .sign-out-btn:hover {
-            text-decoration: underline;
-        }
-
         @media (min-width: 576px) {
             body {
                 padding: 20px;
@@ -1217,416 +1112,363 @@
 </head>
 <body>
     <div class="container">
-        <div id="auth-container" class="auth-container">
-            <h1 class="auth-title">FinTrack UK</h1>
-            <p>Manage your finances securely</p>
-            
-            <div id="auth-form-container" class="auth-form">
-                <div id="login-form">
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" class="form-control" placeholder="Enter your email">
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" class="form-control" placeholder="Enter your password">
-                    </div>
-                    <button id="sign-in-btn" class="btn btn-submit">Sign In</button>
-                    <button id="google-sign-in-btn" class="google-btn">
-                        <i class="fab fa-google"></i> Sign in with Google
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h1>FinTrack <span style="color: var(--uk-blue);">UK</span></h1>
+            </div>
+            <div class="nav-buttons">
+                <div class="tooltip">
+                    <button class="btn btn-outline" id="syncBtn">
+                        <i class="fas fa-sync-alt"></i>
                     </button>
-                    <div class="auth-toggle">
-                        Don't have an account? <a id="show-signup">Sign Up</a>
+                    <span class="tooltiptext">Coming in next update: Bank sync feature</span>
+                </div>
+                <button class="btn btn-primary" id="exportBtn">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- New Features Section -->
+        <div class="feature-card">
+            <div class="feature-section">
+                <div class="feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <div class="feature-title">Debt Tracker</div>
+                </div>
+                <div class="debt-grid">
+                    <div class="debt-card owed-to-me">
+                        <div class="debt-label">You're Owed</div>
+                        <div class="debt-value">£<span id="owedToMe">0.00</span></div>
+                        <div class="debt-label" id="owedToMeCount">By 0 people</div>
+                    </div>
+                    <div class="debt-card owed-to-others">
+                        <div class="debt-label">You Owe</div>
+                        <div class="debt-value">£<span id="owedToOthers">0.00</span></div>
+                        <div class="debt-label" id="owedToOthersCount">To 0 people</div>
                     </div>
                 </div>
+                <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="addDebtBtn">
+                    <i class="fas fa-plus"></i> Add Debt Record
+                </button>
                 
-                <div id="signup-form" style="display: none;">
-                    <div class="form-group">
-                        <label for="signup-email">Email</label>
-                        <input type="email" id="signup-email" class="form-control" placeholder="Enter your email">
+                <div class="debt-management">
+                    <h4 style="margin-bottom: 10px;">Manage Debts</h4>
+                    <div class="debt-list" id="debtList">
+                        <div class="empty-state" style="padding: 20px;">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h4>No active debts</h4>
+                            <p>Add a debt record to get started</p>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="signup-password">Password (min 6 characters)</label>
-                        <input type="password" id="signup-password" class="form-control" placeholder="Create a password">
+                </div>
+            </div>
+            
+            <div class="feature-section">
+                <div class="feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-comment-alt"></i>
                     </div>
-                    <div class="form-group">
-                        <label for="signup-confirm">Confirm Password</label>
-                        <input type="password" id="signup-confirm" class="form-control" placeholder="Confirm your password">
-                    </div>
-                    <button id="sign-up-btn" class="btn btn-submit">Create Account</button>
-                    <div class="auth-toggle">
-                        Already have an account? <a id="show-login">Sign In</a>
-                    </div>
+                    <div class="feature-title">SMS Import</div>
+                </div>
+                <p>Automatically import transactions from your UK bank SMS alerts</p>
+                <button class="sms-import-btn" id="smsImportBtn">
+                    <i class="fas fa-sms"></i> Import Bank Transactions
+                </button>
+                <div class="local-insight">
+                    <i class="fas fa-lightbulb insight-icon"></i>
+                    <strong>UK Insight:</strong> Save 15 mins daily by automating transaction entry
                 </div>
             </div>
         </div>
         
-        <div id="app-container" style="display: none;">
-            <header>
-                <div class="logo">
-                    <div class="logo-icon">
-                        <i class="fas fa-wallet"></i>
+        <!-- UK Innovations Section -->
+        <div class="uk-feature-grid">
+            <!-- Open Banking Card -->
+            <div class="uk-feature-card">
+                <div class="uk-feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-university"></i>
                     </div>
-                    <h1>FinTrack <span style="color: var(--uk-blue);">UK</span></h1>
+                    <div class="uk-feature-title">Open Banking</div>
                 </div>
-                <div class="nav-buttons">
-                    <div class="user-info">
-                        <div class="user-avatar" id="user-avatar">U</div>
-                        <span id="user-email">user@example.com</span>
-                        <button class="sign-out-btn" id="sign-out-btn">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
-                    <div class="tooltip">
-                        <button class="btn btn-outline" id="syncBtn">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                        <span class="tooltiptext">Coming in next update: Bank sync feature</span>
-                    </div>
-                    <button class="btn btn-primary" id="exportBtn">
-                        <i class="fas fa-download"></i>
-                    </button>
+                <p>Connect your UK bank accounts securely via Open Banking API</p>
+                <button class="btn btn-primary" style="width:100%; margin-top:15px;" id="openBankingBtn">
+                    <i class="fas fa-plug"></i> Connect Bank Account
+                </button>
+                <div class="local-insight">
+                    <i class="fas fa-lightbulb insight-icon"></i>
+                    <strong>UK Innovation:</strong> Real-time transaction syncing with 300+ UK banks
                 </div>
-            </header>
+            </div>
             
-            <!-- New Features Section -->
-            <div class="feature-card">
-                <div class="feature-section">
-                    <div class="feature-header">
-                        <div class="feature-icon">
-                            <i class="fas fa-hand-holding-usd"></i>
-                        </div>
-                        <div class="feature-title">Debt Tracker</div>
+            <!-- Tax Calculator Card -->
+            <div class="uk-feature-card">
+                <div class="uk-feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-calculator"></i>
                     </div>
-                    <div class="debt-grid">
-                        <div class="debt-card owed-to-me">
-                            <div class="debt-label">You're Owed</div>
-                            <div class="debt-value">£<span id="owedToMe">0.00</span></div>
-                            <div class="debt-label" id="owedToMeCount">By 0 people</div>
-                        </div>
-                        <div class="debt-card owed-to-others">
-                            <div class="debt-label">You Owe</div>
-                            <div class="debt-value">£<span id="owedToOthers">0.00</span></div>
-                            <div class="debt-label" id="owedToOthersCount">To 0 people</div>
-                        </div>
+                    <div class="uk-feature-title">Tax Calculator</div>
+                </div>
+                <div class="tax-calculator">
+                    <div class="form-group">
+                        <label for="annualIncome">Annual Income (£)</label>
+                        <input type="number" id="annualIncome" class="form-control" placeholder="Enter your annual income" min="0">
                     </div>
-                    <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="addDebtBtn">
-                        <i class="fas fa-plus"></i> Add Debt Record
-                    </button>
+                    <div class="form-group">
+                        <label for="pensionContribution">Pension Contribution (%)</label>
+                        <input type="number" id="pensionContribution" class="form-control" placeholder="Enter %" min="0" max="100" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="studentLoan">Student Loan Plan</label>
+                        <select id="studentLoan" class="form-control">
+                            <option value="none">None</option>
+                            <option value="plan1">Plan 1</option>
+                            <option value="plan2">Plan 2</option>
+                            <option value="postgrad">Postgraduate</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-outline" id="calculateTaxBtn">Calculate Tax</button>
                     
-                    <div class="debt-management">
-                        <h4 style="margin-bottom: 10px;">Manage Debts</h4>
-                        <div class="debt-list" id="debtList">
-                            <div class="empty-state" style="padding: 20px;">
-                                <i class="fas fa-exchange-alt"></i>
-                                <h4>No active debts</h4>
-                                <p>Add a debt record to get started</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="feature-section">
-                    <div class="feature-header">
-                        <div class="feature-icon">
-                            <i class="fas fa-comment-alt"></i>
-                        </div>
-                        <div class="feature-title">SMS Import</div>
-                    </div>
-                    <p>Automatically import transactions from your UK bank SMS alerts</p>
-                    <button class="sms-import-btn" id="smsImportBtn">
-                        <i class="fas fa-sms"></i> Import Bank Transactions
-                    </button>
-                    <div class="local-insight">
-                        <i class="fas fa-lightbulb insight-icon"></i>
-                        <strong>UK Insight:</strong> Save 15 mins daily by automating transaction entry
+                    <div class="tax-result" id="taxResult">
+                        <p>Enter your income to calculate taxes</p>
                     </div>
                 </div>
             </div>
             
-            <!-- UK Innovations Section -->
-            <div class="uk-feature-grid">
-                <!-- Open Banking Card -->
-                <div class="uk-feature-card">
-                    <div class="uk-feature-header">
-                        <div class="feature-icon">
-                            <i class="fas fa-university"></i>
-                        </div>
-                        <div class="uk-feature-title">Open Banking</div>
+            <!-- Savings Goals Card -->
+            <div class="uk-feature-card">
+                <div class="uk-feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-bullseye"></i>
                     </div>
-                    <p>Connect your UK bank accounts securely via Open Banking API</p>
-                    <button class="btn btn-primary" style="width:100%; margin-top:15px;" id="openBankingBtn">
-                        <i class="fas fa-plug"></i> Connect Bank Account
-                    </button>
-                    <div class="local-insight">
-                        <i class="fas fa-lightbulb insight-icon"></i>
-                        <strong>UK Innovation:</strong> Real-time transaction syncing with 300+ UK banks
-                    </div>
+                    <div class="uk-feature-title">Savings Goals</div>
                 </div>
-                
-                <!-- Tax Calculator Card -->
-                <div class="uk-feature-card">
-                    <div class="uk-feature-header">
-                        <div class="feature-icon">
-                            <i class="fas fa-calculator"></i>
-                        </div>
-                        <div class="uk-feature-title">Tax Calculator</div>
+                <div class="savings-goal">
+                    <h4>ISA Savings Goal</h4>
+                    <p>£1,500 saved of £20,000</p>
+                    <div class="savings-progress">
+                        <div class="savings-fill" style="width: 7.5%"></div>
                     </div>
-                    <div class="tax-calculator">
-                        <div class="form-group">
-                            <label for="annualIncome">Annual Income (£)</label>
-                            <input type="number" id="annualIncome" class="form-control" placeholder="Enter your annual income" min="0">
-                        </div>
-                        <div class="form-group">
-                            <label for="pensionContribution">Pension Contribution (%)</label>
-                            <input type="number" id="pensionContribution" class="form-control" placeholder="Enter %" min="0" max="100" value="5">
-                        </div>
-                        <div class="form-group">
-                            <label for="studentLoan">Student Loan Plan</label>
-                            <select id="studentLoan" class="form-control">
-                                <option value="none">None</option>
-                                <option value="plan1">Plan 1</option>
-                                <option value="plan2">Plan 2</option>
-                                <option value="postgrad">Postgraduate</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-outline" id="calculateTaxBtn">Calculate Tax</button>
-                        
-                        <div class="tax-result" id="taxResult">
-                            <p>Enter your income to calculate taxes</p>
-                        </div>
-                    </div>
+                    <small>Maximize your £20,000 annual ISA allowance</small>
                 </div>
-                
-                <!-- Savings Goals Card -->
-                <div class="uk-feature-card">
-                    <div class="uk-feature-header">
-                        <div class="feature-icon">
-                            <i class="fas fa-bullseye"></i>
-                        </div>
-                        <div class="uk-feature-title">Savings Goals</div>
+                <div class="savings-goal">
+                    <h4>House Deposit</h4>
+                    <p>£8,200 saved of £30,000</p>
+                    <div class="savings-progress">
+                        <div class="savings-fill" style="width: 27.3%"></div>
                     </div>
-                    <div class="savings-goal">
-                        <h4>ISA Savings Goal</h4>
-                        <p>£1,500 saved of £20,000</p>
-                        <div class="savings-progress">
-                            <div class="savings-fill" style="width: 7.5%"></div>
-                        </div>
-                        <small>Maximize your £20,000 annual ISA allowance</small>
-                    </div>
-                    <div class="savings-goal">
-                        <h4>House Deposit</h4>
-                        <p>£8,200 saved of £30,000</p>
-                        <div class="savings-progress">
-                            <div class="savings-fill" style="width: 27.3%"></div>
-                        </div>
-                        <small>Lifetime ISA bonus: £1,000</small>
-                    </div>
-                    <button class="btn btn-outline" style="width:100%; margin-top:10px;" id="addGoalBtn">
-                        <i class="fas fa-plus"></i> Add New Goal
-                    </button>
+                    <small>Lifetime ISA bonus: £1,000</small>
                 </div>
+                <button class="btn btn-outline" style="width:100%; margin-top:10px;" id="addGoalBtn">
+                    <i class="fas fa-plus"></i> Add New Goal
+                </button>
             </div>
+        </div>
 
-            <div class="main-content">
-                <div class="left-column">
-                    <div class="dashboard">
-                        <!-- Balance Card -->
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">
-                                    <div class="card-icon">
-                                        <i class="fas fa-coins"></i>
-                                    </div>
-                                    Current Balance
+        <div class="main-content">
+            <div class="left-column">
+                <div class="dashboard">
+                    <!-- Balance Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="card-icon">
+                                    <i class="fas fa-coins"></i>
                                 </div>
-                            </div>
-                            <div class="balance-amount"><span class="currency-symbol">£</span> <span id="currentBalance">0.00</span></div>
-                            <div class="balance-stats">
-                                <div class="stat">
-                                    <div class="stat-value income-value" id="totalIncome">£0.00</div>
-                                    <div class="stat-label">Income</div>
-                                </div>
-                                <div class="stat">
-                                    <div class="stat-value expense-value" id="totalExpense">£0.00</div>
-                                    <div class="stat-label">Expenses</div>
-                                </div>
+                                Current Balance
                             </div>
                         </div>
-                        
-                        <!-- Budget Card -->
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">
-                                    <div class="card-icon">
-                                        <i class="fas fa-chart-pie"></i>
-                                    </div>
-                                    Monthly Budget
-                                </div>
-                                <button class="btn btn-outline" id="setBudgetBtn">
-                                    <i class="fas fa-edit"></i>
-                                </button>
+                        <div class="balance-amount"><span class="currency-symbol">£</span> <span id="currentBalance">0.00</span></div>
+                        <div class="balance-stats">
+                            <div class="stat">
+                                <div class="stat-value income-value" id="totalIncome">£0.00</div>
+                                <div class="stat-label">Income</div>
                             </div>
-                            <div class="balance-amount"><span id="usedBudget">£0.00</span> / <span id="totalBudget">£0.00</span></div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="budgetProgress"></div>
-                            </div>
-                            <div class="balance-stats">
-                                <div class="stat">
-                                    <div class="stat-value" id="remainingBudget">£0.00</div>
-                                    <div class="stat-label">Remaining</div>
-                                </div>
-                                <div class="stat">
-                                    <div class="stat-value" id="daysLeft">0 days</div>
-                                    <div class="stat-label">Left</div>
-                                </div>
+                            <div class="stat">
+                                <div class="stat-value expense-value" id="totalExpense">£0.00</div>
+                                <div class="stat-label">Expenses</div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Transaction Form -->
-                    <div class="transaction-form">
-                        <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add Transaction</h2>
-                        <form id="transactionForm">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="transactionType">Type</label>
-                                    <select id="transactionType" class="form-control">
-                                        <option value="income">Income</option>
-                                        <option value="expense">Expense</option>
-                                    </select>
+                    <!-- Budget Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="card-icon">
+                                    <i class="fas fa-chart-pie"></i>
                                 </div>
-                                <div class="form-group">
-                                    <label for="amount">Amount (£)</label>
-                                    <input type="number" id="amount" class="form-control" placeholder="0.00" step="0.01" min="0">
-                                </div>
+                                Monthly Budget
                             </div>
-                            
+                            <button class="btn btn-outline" id="setBudgetBtn">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        <div class="balance-amount"><span id="usedBudget">£0.00</span> / <span id="totalBudget">£0.00</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="budgetProgress"></div>
+                        </div>
+                        <div class="balance-stats">
+                            <div class="stat">
+                                <div class="stat-value" id="remainingBudget">£0.00</div>
+                                <div class="stat-label">Remaining</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value" id="daysLeft">0 days</div>
+                                <div class="stat-label">Left</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Transaction Form -->
+                <div class="transaction-form">
+                    <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add Transaction</h2>
+                    <form id="transactionForm">
+                        <div class="form-row">
                             <div class="form-group">
-                                <label for="category">Category</label>
-                                <select id="category" class="form-control">
-                                    <option value="salary">Salary</option>
-                                    <option value="freelance">Freelance</option>
-                                    <option value="investment">Investment</option>
-                                    <option value="benefits">Benefits</option>
-                                    <option value="food">Food & Dining</option>
-                                    <option value="shopping">Shopping</option>
-                                    <option value="transport">Transport</option>
-                                    <option value="housing">Housing</option>
-                                    <option value="council_tax">Council Tax</option>
-                                    <option value="utilities">Utilities</option>
-                                    <option value="tv_license">TV License</option>
-                                    <option value="pension">Pension Contribution</option>
-                                    <option value="entertainment">Entertainment</option>
-                                    <option value="other">Other</option>
+                                <label for="transactionType">Type</label>
+                                <select id="transactionType" class="form-control">
+                                    <option value="income">Income</option>
+                                    <option value="expense">Expense</option>
                                 </select>
                             </div>
-                            
                             <div class="form-group">
-                                <label for="description">Description</label>
-                                <input type="text" id="description" class="form-control" placeholder="Enter transaction details">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="date">Date</label>
-                                <input type="date" id="date" class="form-control" value="">
-                            </div>
-                            
-                            <button type="submit" class="btn btn-submit">
-                                <i class="fas fa-check-circle"></i> Add Transaction
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <!-- Charts -->
-                    <div class="charts-container">
-                        <h2 class="chart-title"><i class="fas fa-chart-bar"></i> Financial Reports</h2>
-                        <div class="chart-row">
-                            <div class="card chart-card">
-                                <canvas id="spendingChart"></canvas>
-                            </div>
-                            <div class="card chart-card">
-                                <canvas id="incomeChart"></canvas>
+                                <label for="amount">Amount (£)</label>
+                                <input type="number" id="amount" class="form-control" placeholder="0.00" step="0.01" min="0">
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Brexit Impact Section -->
-                    <div class="feature-section">
-                        <div class="feature-header">
-                            <div class="feature-icon">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <div class="feature-title">Brexit Impact Analysis</div>
+                        
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" class="form-control">
+                                <option value="salary">Salary</option>
+                                <option value="freelance">Freelance</option>
+                                <option value="investment">Investment</option>
+                                <option value="benefits">Benefits</option>
+                                <option value="food">Food & Dining</option>
+                                <option value="shopping">Shopping</option>
+                                <option value="transport">Transport</option>
+                                <option value="housing">Housing</option>
+                                <option value="council_tax">Council Tax</option>
+                                <option value="utilities">Utilities</option>
+                                <option value="tv_license">TV License</option>
+                                <option value="pension">Pension Contribution</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="other">Other</option>
+                            </select>
                         </div>
-                        <div class="brexit-impact">
-                            <p><i class="fas fa-info-circle"></i> <strong>Impact on your finances:</strong> Our analysis shows Brexit has increased your monthly grocery costs by approximately £28.50</p>
+                        
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <input type="text" id="description" class="form-control" placeholder="Enter transaction details">
                         </div>
-                        <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="brexitReportBtn">
-                            <i class="fas fa-chart-pie"></i> View Full Brexit Impact Report
+                        
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" class="form-control" value="">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-check-circle"></i> Add Transaction
                         </button>
+                    </form>
+                </div>
+                
+                <!-- Charts -->
+                <div class="charts-container">
+                    <h2 class="chart-title"><i class="fas fa-chart-bar"></i> Financial Reports</h2>
+                    <div class="chart-row">
+                        <div class="card chart-card">
+                            <canvas id="spendingChart"></canvas>
+                        </div>
+                        <div class="card chart-card">
+                            <canvas id="incomeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Brexit Impact Section -->
+                <div class="feature-section">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="feature-title">Brexit Impact Analysis</div>
+                    </div>
+                    <div class="brexit-impact">
+                        <p><i class="fas fa-info-circle"></i> <strong>Impact on your finances:</strong> Our analysis shows Brexit has increased your monthly grocery costs by approximately £28.50</p>
+                    </div>
+                    <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="brexitReportBtn">
+                        <i class="fas fa-chart-pie"></i> View Full Brexit Impact Report
+                    </button>
+                </div>
+                
+                <!-- Reset Section -->
+                <div class="reset-section">
+                    <button class="reset-btn" id="resetBtn">
+                        <i class="fas fa-redo"></i> Reset All Data
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Right Column - Transactions -->
+            <div class="right-column">
+                <div class="transaction-list">
+                    <div class="list-header">
+                        <h2 class="card-title"><i class="fas fa-list"></i> Recent Transactions</h2>
+                        <div class="filters">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="income">Income</button>
+                            <button class="filter-btn" data-filter="expense">Expense</button>
+                        </div>
                     </div>
                     
-                    <!-- Reset Section -->
-                    <div class="reset-section">
-                        <button class="reset-btn" id="resetBtn">
-                            <i class="fas fa-redo"></i> Reset All Data
+                    <div id="transactionsContainer">
+                        <div class="empty-state">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h3>No transactions yet</h3>
+                            <p>Add your first transaction to get started</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="export-section">
+                    <h2 class="card-title"><i class="fas fa-file-export"></i> Export Data</h2>
+                    <p>Download your financial data for backup or analysis</p>
+                    <div class="export-options">
+                        <button class="export-btn" id="exportCsv">
+                            <div class="export-icon">
+                                <i class="fas fa-file-csv"></i>
+                            </div>
+                            <span>CSV Export</span>
+                        </button>
+                        <button class="export-btn" id="exportPdf">
+                            <div class="export-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <span>PDF Report</span>
                         </button>
                     </div>
                 </div>
                 
-                <!-- Right Column - Transactions -->
-                <div class="right-column">
-                    <div class="transaction-list">
-                        <div class="list-header">
-                            <h2 class="card-title"><i class="fas fa-list"></i> Recent Transactions</h2>
-                            <div class="filters">
-                                <button class="filter-btn active" data-filter="all">All</button>
-                                <button class="filter-btn" data-filter="income">Income</button>
-                                <button class="filter-btn" data-filter="expense">Expense</button>
-                            </div>
+                <!-- Pension Tracker - UPDATED SECTION -->
+                <div class="feature-section" style="margin-top: 20px;">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-piggy-bank"></i>
                         </div>
-                        
-                        <div id="transactionsContainer">
-                            <div class="empty-state">
-                                <i class="fas fa-exchange-alt"></i>
-                                <h3>No transactions yet</h3>
-                                <p>Add your first transaction to get started</p>
-                            </div>
-                        </div>
+                        <div class="feature-title">Pension Projections</div>
                     </div>
-                    
-                    <div class="export-section">
-                        <h2 class="card-title"><i class="fas fa-file-export"></i> Export Data</h2>
-                        <p>Download your financial data for backup or analysis</p>
-                        <div class="export-options">
-                            <button class="export-btn" id="exportCsv">
-                                <div class="export-icon">
-                                    <i class="fas fa-file-csv"></i>
-                                </div>
-                                <span>CSV Export</span>
-                            </button>
-                            <button class="export-btn" id="exportPdf">
-                                <div class="export-icon">
-                                    <i class="fas fa-file-pdf"></i>
-                                </div>
-                                <span>PDF Report</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Pension Tracker - UPDATED SECTION -->
-                    <div class="feature-section" style="margin-top: 20px;">
-                        <div class="feature-header">
-                            <div class="feature-icon">
-                                <i class="fas fa-piggy-bank"></i>
-                            </div>
-                            <div class="feature-title">Pension Projections</div>
-                        </div>
-                        <div class="local-insight">
-                            <i class="fas fa-info-circle insight-icon"></i>
-                            Advanced pension projection features are coming in the next update!
-                        </div>
+                    <div class="local-insight">
+                        <i class="fas fa-info-circle insight-icon"></i>
+                        Advanced pension projection features are coming in the next update!
                     </div>
                 </div>
             </div>
@@ -1816,23 +1658,7 @@
     </div>
 
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDYsizyikM-k1wrQYU0i4hBFFw9Ew16w7Y",
-            authDomain: "fintrack-uk-d62ba.firebaseapp.com",
-            projectId: "fintrack-uk-d62ba",
-            storageBucket: "fintrack-uk-d62ba.appspot.com",
-            messagingSenderId: "1001994260633",
-            appId: "1:1001994260633:web:6d3146ae83ab8f54c5e808",
-            measurementId: "G-LPC9KBWQGK"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const analytics = firebase.analytics();
-
-        // Initialize the application after Firebase setup
+        // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize variables
             let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
@@ -1846,19 +1672,6 @@
             let currentDebtId = null;
             
             // DOM Elements
-            const authContainer = document.getElementById('auth-container');
-            const appContainer = document.getElementById('app-container');
-            const loginForm = document.getElementById('login-form');
-            const signupForm = document.getElementById('signup-form');
-            const showSignup = document.getElementById('show-signup');
-            const showLogin = document.getElementById('show-login');
-            const signInBtn = document.getElementById('sign-in-btn');
-            const signUpBtn = document.getElementById('sign-up-btn');
-            const googleSignInBtn = document.getElementById('google-sign-in-btn');
-            const signOutBtn = document.getElementById('sign-out-btn');
-            const userEmail = document.getElementById('user-email');
-            const userAvatar = document.getElementById('user-avatar');
-            
             const transactionForm = document.getElementById('transactionForm');
             const transactionsContainer = document.getElementById('transactionsContainer');
             const currentBalanceEl = document.getElementById('currentBalance');
@@ -1936,112 +1749,51 @@
             updateCharts();
             calculatePensionProjection();
             
-            // Firebase Auth State Listener
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    // User is signed in
-                    appContainer.style.display = 'block';
-                    authContainer.style.display = 'none';
-                    
-                    // Update user info
-                    userEmail.textContent = user.email;
-                    userAvatar.textContent = user.email.charAt(0).toUpperCase();
-                    
-                    // Track login event
-                    analytics.logEvent('login');
-                } else {
-                    // User is signed out
-                    appContainer.style.display = 'none';
-                    authContainer.style.display = 'block';
-                    loginForm.style.display = 'block';
-                    signupForm.style.display = 'none';
-                }
+            // Event Listeners
+            transactionForm.addEventListener('submit', addTransaction);
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    renderTransactions();
+                });
             });
             
-            // Auth Event Listeners
-            showSignup.addEventListener('click', () => {
-                loginForm.style.display = 'none';
-                signupForm.style.display = 'block';
+            exportCsvBtn.addEventListener('click', exportToCsv);
+            exportPdfBtn.addEventListener('click', exportToPdf);
+            setBudgetBtn.addEventListener('click', () => budgetModal.classList.add('active'));
+            closeBudgetModal.addEventListener('click', () => budgetModal.classList.remove('active'));
+            cancelBudget.addEventListener('click', () => budgetModal.classList.remove('active'));
+            saveBudgetBtn.addEventListener('click', setBudget);
+            resetBtn.addEventListener('click', () => resetModal.classList.add('active'));
+            closeResetModal.addEventListener('click', () => resetModal.classList.remove('active'));
+            cancelReset.addEventListener('click', () => resetModal.classList.remove('active'));
+            confirmReset.addEventListener('click', resetAllData);
+            smsImportBtn.addEventListener('click', () => showNotification('SMS Import feature coming in the next update!'));
+            addDebtBtn.addEventListener('click', () => debtModal.classList.add('active'));
+            closeDebtModal.addEventListener('click', () => debtModal.classList.remove('active'));
+            cancelDebt.addEventListener('click', () => debtModal.classList.remove('active'));
+            saveDebtBtn.addEventListener('click', addDebt);
+            openBankingBtn.addEventListener('click', () => showNotification('Open Banking integration coming in the next update!'));
+            calculateTaxBtn.addEventListener('click', calculateTax);
+            addGoalBtn.addEventListener('click', () => showNotification('Savings goal feature coming in the next update!'));
+            brexitReportBtn.addEventListener('click', () => showNotification('Brexit impact report feature coming in the next update!'));
+            pensionProjectionBtn.addEventListener('click', () => {
+                pensionModal.classList.add('active');
+                calculatePensionProjection();
             });
-            
-            showLogin.addEventListener('click', () => {
-                loginForm.style.display = 'block';
-                signupForm.style.display = 'none';
+            closePensionModal.addEventListener('click', () => pensionModal.classList.remove('active'));
+            cancelPension.addEventListener('click', () => pensionModal.classList.remove('active'));
+            updateProjectionBtn.addEventListener('click', function() {
+                calculatePensionProjection();
+                showNotification('Advanced pension projection features coming in the next update!');
             });
-            
-            signInBtn.addEventListener('click', signIn);
-            
-            signUpBtn.addEventListener('click', signUp);
-            
-            googleSignInBtn.addEventListener('click', signInWithGoogle);
-            
-            signOutBtn.addEventListener('click', signOut);
-            
-            // Auth Functions
-            function signIn() {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                
-                if (!email || !password) {
-                    showNotification('Please enter both email and password', 'error');
-                    return;
-                }
-                
-                auth.signInWithEmailAndPassword(email, password)
-                    .then(() => {
-                        showNotification('Signed in successfully!');
-                    })
-                    .catch(error => {
-                        showNotification(`Sign in failed: ${error.message}`, 'error');
-                    });
-            }
-            
-            function signUp() {
-                const email = document.getElementById('signup-email').value;
-                const password = document.getElementById('signup-password').value;
-                const confirm = document.getElementById('signup-confirm').value;
-                
-                if (!email || !password || !confirm) {
-                    showNotification('Please fill all fields', 'error');
-                    return;
-                }
-                
-                if (password.length < 6) {
-                    showNotification('Password must be at least 6 characters', 'error');
-                    return;
-                }
-                
-                if (password !== confirm) {
-                    showNotification('Passwords do not match', 'error');
-                    return;
-                }
-                
-                auth.createUserWithEmailAndPassword(email, password)
-                    .then(() => {
-                        showNotification('Account created successfully!');
-                    })
-                    .catch(error => {
-                        showNotification(`Sign up failed: ${error.message}`, 'error');
-                    });
-            }
-            
-            function signInWithGoogle() {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                auth.signInWithPopup(provider)
-                    .then(() => {
-                        showNotification('Signed in with Google successfully!');
-                    })
-                    .catch(error => {
-                        showNotification(`Google sign in failed: ${error.message}`, 'error');
-                    });
-            }
-            
-            function signOut() {
-                auth.signOut()
-                    .then(() => {
-                        showNotification('Signed out successfully!');
-                    });
-            }
+            closePaymentModal.addEventListener('click', () => paymentModal.classList.remove('active'));
+            cancelPayment.addEventListener('click', () => paymentModal.classList.remove('active'));
+            savePaymentBtn.addEventListener('click', recordPayment);
+            closeHistoryModal.addEventListener('click', () => historyModal.classList.remove('active'));
+            closeHistory.addEventListener('click', () => historyModal.classList.remove('active'));
             
             // Initialize charts with empty data
             function initCharts() {
@@ -3010,49 +2762,7 @@
             function saveDebts() {
                 localStorage.setItem('debts', JSON.stringify(debts));
             }
-            
-            // Set up event listeners for the rest of the app
-            transactionForm.addEventListener('submit', addTransaction);
-            filterButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    filterButtons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentFilter = btn.dataset.filter;
-                    renderTransactions();
-                });
-            });
-            
-            exportCsvBtn.addEventListener('click', exportToCsv);
-            exportPdfBtn.addEventListener('click', exportToPdf);
-            setBudgetBtn.addEventListener('click', () => budgetModal.classList.add('active'));
-            closeBudgetModal.addEventListener('click', () => budgetModal.classList.remove('active'));
-            cancelBudget.addEventListener('click', () => budgetModal.classList.remove('active'));
-            saveBudgetBtn.addEventListener('click', setBudget);
-            resetBtn.addEventListener('click', () => resetModal.classList.add('active'));
-            closeResetModal.addEventListener('click', () => resetModal.classList.remove('active'));
-            cancelReset.addEventListener('click', () => resetModal.classList.remove('active'));
-            confirmReset.addEventListener('click', resetAllData);
-            smsImportBtn.addEventListener('click', () => showNotification('SMS Import feature coming in the next update!'));
-            addDebtBtn.addEventListener('click', () => debtModal.classList.add('active'));
-            closeDebtModal.addEventListener('click', () => debtModal.classList.remove('active'));
-            cancelDebt.addEventListener('click', () => debtModal.classList.remove('active'));
-            saveDebtBtn.addEventListener('click', addDebt);
-            openBankingBtn.addEventListener('click', () => showNotification('Open Banking integration coming in the next update!'));
-            calculateTaxBtn.addEventListener('click', calculateTax);
-            addGoalBtn.addEventListener('click', () => showNotification('Savings goal feature coming in the next update!'));
-            brexitReportBtn.addEventListener('click', () => showNotification('Brexit impact report feature coming in the next update!'));
-            closePensionModal.addEventListener('click', () => pensionModal.classList.remove('active'));
-            cancelPension.addEventListener('click', () => pensionModal.classList.remove('active'));
-            updateProjectionBtn.addEventListener('click', function() {
-                calculatePensionProjection();
-                showNotification('Advanced pension projection features coming in the next update!');
-            });
-            closePaymentModal.addEventListener('click', () => paymentModal.classList.remove('active'));
-            cancelPayment.addEventListener('click', () => paymentModal.classList.remove('active'));
-            savePaymentBtn.addEventListener('click', recordPayment);
-            closeHistoryModal.addEventListener('click', () => historyModal.classList.remove('active'));
-            closeHistory.addEventListener('click', () => historyModal.classList.remove('active'));
         });
     </script>
 </body>
-</html>
+</html>                        
