@@ -2,7 +2,7 @@
   "name": "FinTrack UK",
   "short_name": "FinTrack",
   "description": "Complete UK Finance Tracker",
-  "start_url": "/",
+  "start_url": "https://vincenek.github.io/Fintrack-UK/",
   "display": "standalone",
   "theme_color": "#0d6efd",
   "background_color": "#ffffff",
