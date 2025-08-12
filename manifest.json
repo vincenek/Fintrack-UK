@@ -8,14 +8,14 @@
   "description": "Track income, expenses, and budgets. Designed for UK users with Open Banking integration, tax calculators, and savings tools.",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "https://i.postimg.cc/qzC9JDZ8/BB5-EC8-A8-C0-B6-4881-92-FF-C0339-F6068-B3.jpg",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "https://i.postimg.cc/qzC9JDZ8/BB5-EC8-A8-C0-B6-4881-92-FF-C0339-F6068-B3.jpg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/jpeg"
     }
   ]
 }
