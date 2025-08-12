@@ -1,7 +1,7 @@
 {
   "name": "Fintrack UK",
   "short_name": "FintrackUK",
-  "start_url": "Fintrack-UK/",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0d6efd",
