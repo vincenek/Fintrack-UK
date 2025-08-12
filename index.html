@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinTrack UK | Complete Finance Tracker</title>
+    
+    <!-- Manifest and theme color -->
     <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0d6efd">
+    <meta name="theme-color" content="#0d6efd">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1267,6 +1270,27 @@
             z-index: 1000;
         }
 
+        /* Install button */
+        .install-btn {
+            background: linear-gradient(to right, #10b981, #059669);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            box-shadow: var(--card-shadow);
+        }
+        
+        .install-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.1);
+        }
+
         @media (min-width: 576px) {
             body {
                 padding: 20px;
@@ -1396,7 +1420,9 @@
                             <i class="fas fa-sign-out-alt"></i> Sign Out
                         </button>
                     </div>
-                    <!-- Removed the download button as requested -->
+                    <button class="install-btn" id="installBtn" style="display: none;">
+                        <i class="fas fa-download"></i> Install App
+                    </button>
                 </div>
             </header>
             
@@ -1959,6 +1985,7 @@
             let currentFilter = 'all';
             let currentDebtId = null;
             let currentUser = null;
+            let deferredPrompt = null;
             
             // DOM Elements
             const authContainer = document.getElementById('auth-container');
@@ -1971,6 +1998,7 @@
             const signUpBtn = document.getElementById('sign-up-btn');
             const signOutBtn = document.getElementById('sign-out-btn');
             const userAvatar = document.getElementById('user-avatar');
+            const installBtn = document.getElementById('installBtn');
             
             const transactionForm = document.getElementById('transactionForm');
             const transactionsContainer = document.getElementById('transactionsContainer');
@@ -1991,7 +2019,6 @@
             const closeBudgetModal = document.getElementById('closeBudgetModal');
             const cancelBudget = document.getElementById('cancelBudget');
             const saveBudgetBtn = document.getElementById('saveBudget');
-            const budgetAmountInput = document.getElementById('budgetAmount');
             const resetBtn = document.getElementById('resetBtn');
             const resetModal = document.getElementById('resetModal');
             const closeResetModal = document.getElementById('closeResetModal');
@@ -2062,6 +2089,36 @@
                     loginForm.style.display = 'block';
                     signupForm.style.display = 'none';
                 }
+            });
+            
+            // PWA Install Prompt
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent the mini-infobar from appearing on mobile
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                deferredPrompt = e;
+                // Show the install button
+                installBtn.style.display = 'flex';
+            });
+            
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                
+                // Show the install prompt
+                deferredPrompt.prompt();
+                
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                    installBtn.style.display = 'none';
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+                
+                // Clear the deferredPrompt variable
+                deferredPrompt = null;
             });
             
             // Auth Event Listeners
