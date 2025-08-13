@@ -1,6 +1,6 @@
 {
   "name": "FinTrack UK",
-  "short_name": "FinTrack",
+  "short_name": "FinTrack UK",
   "description": "Complete UK Finance Tracker",
   "start_url": "https://vincenek.github.io/Fintrack-UK/",
   "display": "standalone",
