@@ -880,7 +880,7 @@
         .debt-progress {
             height: 5px;
             background: #e2e8f0;
-            border-radius: 3px;
+            borderRadius: 3px;
             overflow: hidden;
             margin: 8px 0;
         }
@@ -2040,8 +2040,8 @@
             let spendingChart, incomeChart;
             initCharts();
             
-            // Firebase Auth State Listener
-            auth.onAuthStateChanged(user => {
+            // Firebase Auth State Listener - UPDATED to ensure proper data loading
+            auth.onAuthStateChanged(async user => {
                 if (user) {
                     // User is signed in
                     currentUser = user;
@@ -2051,8 +2051,8 @@
                     // Update user info
                     userAvatar.textContent = user.email.charAt(0).toUpperCase();
                     
-                    // Load user data from Firestore
-                    loadUserData();
+                    // Load user data from Firestore - ADDED await for proper loading
+                    await loadUserData();
                 } else {
                     // User is signed out
                     currentUser = null;
@@ -2165,13 +2165,17 @@
                     });
             }
             
-            // Firestore Data Functions
-            function loadUserData() {
-                if (!currentUser) return;
+            // Firestore Data Functions - ENHANCED with better error handling
+            async function loadUserData() {
+                if (!currentUser) {
+                    console.log("No user logged in, skipping data load");
+                    return;
+                }
                 
-                const userRef = db.collection('users').doc(currentUser.uid);
-                
-                userRef.get().then(doc => {
+                try {
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    const doc = await userRef.get();
+                    
                     if (doc.exists) {
                         const data = doc.data();
                         transactions = data.transactions || [];
@@ -2183,8 +2187,9 @@
                         
                         // Update UI with loaded data
                         updateUI();
+                        showNotification('Data loaded successfully!');
                     } else {
-                        // Initialize with empty data
+                        // Initialize with empty data for new users
                         transactions = [];
                         budget = { total: 0 };
                         debts = {
@@ -2193,34 +2198,76 @@
                         };
                         
                         // Create new document for user
-                        saveUserData();
+                        await saveUserData();
+                        showNotification('Welcome! Your account has been set up.');
                     }
-                }).catch(error => {
+                } catch (error) {
                     console.error("Error loading user data:", error);
-                    showNotification('Error loading your data', 'error');
-                });
+                    showNotification('Error loading your data. Using local storage.', 'error');
+                    
+                    // Fallback to localStorage if Firestore fails
+                    const localData = localStorage.getItem(`fintrack_${currentUser.uid}`);
+                    if (localData) {
+                        try {
+                            const parsedData = JSON.parse(localData);
+                            transactions = parsedData.transactions || [];
+                            budget = parsedData.budget || { total: 0 };
+                            debts = parsedData.debts || {
+                                owedToMe: [],
+                                owedToOthers: []
+                            };
+                            updateUI();
+                        } catch (e) {
+                            console.error("Error parsing local data:", e);
+                        }
+                    }
+                }
             }
             
-            function saveUserData() {
-                if (!currentUser) return;
+            async function saveUserData() {
+                if (!currentUser) {
+                    console.log("No user logged in, skipping save");
+                    return;
+                }
                 
-                const userRef = db.collection('users').doc(currentUser.uid);
-                
-                userRef.set({
-                    transactions: transactions,
-                    budget: budget,
-                    debts: debts,
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
+                try {
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    
+                    await userRef.set({
+                        transactions: transactions,
+                        budget: budget,
+                        debts: debts,
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                        email: currentUser.email // Store user email for reference
+                    });
+                    
+                    // Also save to localStorage as a backup
+                    localStorage.setItem(`fintrack_${currentUser.uid}`, JSON.stringify({
+                        transactions,
+                        budget,
+                        debts
+                    }));
+                    
                     // Show sync indicator
                     syncIndicator.style.display = 'flex';
                     setTimeout(() => {
                         syncIndicator.style.display = 'none';
                     }, 3000);
-                }).catch(error => {
+                } catch (error) {
                     console.error("Error saving user data:", error);
-                    showNotification('Error saving your data', 'error');
-                });
+                    showNotification('Error saving your data to cloud.', 'error');
+                    
+                    // Fallback to localStorage
+                    try {
+                        localStorage.setItem(`fintrack_${currentUser.uid}`, JSON.stringify({
+                            transactions,
+                            budget,
+                            debts
+                        }));
+                    } catch (e) {
+                        console.error("Error saving to local storage:", e);
+                    }
+                }
             }
             
             // Initialize charts with empty data
